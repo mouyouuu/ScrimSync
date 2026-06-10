@@ -397,11 +397,15 @@ export default function AdminPage() {
             </Card>
 
             {/* Stats W/L */}
-            {stats && stats.total > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Historique des résultats</CardTitle>
-                </CardHeader>
+            <Card>
+              <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
+              {!stats ? (
+                <div className="flex justify-center py-6">
+                  <div className="h-5 w-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                </div>
+              ) : stats.total === 0 ? (
+                <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
+              ) : (
                 <div className="flex items-center gap-6 flex-wrap">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-success">{stats.wins}</p>
@@ -417,13 +421,13 @@ export default function AdminPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-accent">
-                      {stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0}%
+                      {Math.round((stats.wins / stats.total) * 100)}%
                     </p>
                     <p className="text-xs text-text-muted mt-0.5">Win rate</p>
                   </div>
                 </div>
-              </Card>
-            )}
+              )}
+            </Card>
 
             {/* Gestion des joueurs */}
             <Card>

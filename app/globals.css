@@ -42,6 +42,11 @@
     background: #52525b;
   }
 
+  /* Prevent iOS zoom on input focus (requires font-size >= 16px) */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
   /* Select styling for dark theme */
   select option {
     background-color: #18181b;
