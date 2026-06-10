@@ -46,6 +46,11 @@ export default function AdminPage() {
   const [notifForm, setNotifForm] = useState({ title: '', body: '' })
   const [notifSending, setNotifSending] = useState(false)
   const [notifSent, setNotifSent] = useState(false)
+  const [stats, setStats] = useState<{ wins: number; losses: number; total: number } | null>(null)
+  const [playerEdits, setPlayerEdits] = useState<Record<string, string>>({})
+  const [playerSaving, setPlayerSaving] = useState<string | null>(null)
+  const [availHours, setAvailHours] = useState<number[]>([19, 20, 21, 22, 23])
+  const [hoursSaving, setHoursSaving] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -70,7 +75,12 @@ export default function AdminPage() {
         scrimsRes.json(),
       ])
 
-      if (Array.isArray(playersData)) setPlayers(playersData)
+      if (Array.isArray(playersData)) {
+        setPlayers(playersData)
+        const edits: Record<string, string> = {}
+        playersData.forEach((p: Player) => { edits[p.id] = p.name })
+        setPlayerEdits(edits)
+      }
       if (Array.isArray(availData)) setAvailabilities(availData)
       if (Array.isArray(subsData)) setSubmissions(subsData)
       if (Array.isArray(scrimsData)) setScrims(scrimsData)
@@ -81,9 +91,14 @@ export default function AdminPage() {
     }
   }, [ws])
 
+  useEffect(() => { loadData() }, [loadData])
+
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
+    fetch('/api/settings').then(r => r.json()).then(d => {
+      if (Array.isArray(d.available_hours)) setAvailHours(d.available_hours)
+    }).catch(() => {})
+  }, [])
 
   const matrix = buildAvailabilityMatrix(availabilities, players)
   const perfectSlots = getPerfectSlots(matrix)
@@ -157,6 +172,35 @@ export default function AdminPage() {
     }
     setRelanceCopied(true)
     setTimeout(() => setRelanceCopied(false), 2000)
+  }
+
+  async function handleSavePlayerName(id: string) {
+    const name = playerEdits[id]?.trim()
+    if (!name) return
+    setPlayerSaving(id)
+    await fetch(`/api/players/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+    setPlayerSaving(null)
+    await loadData()
+  }
+
+  async function handleToggleHour(hour: number) {
+    setAvailHours(prev =>
+      prev.includes(hour) ? prev.filter(h => h !== hour) : [...prev, hour].sort((a, b) => a - b)
+    )
+  }
+
+  async function handleSaveHours() {
+    setHoursSaving(true)
+    await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ available_hours: availHours }),
+    })
+    setHoursSaving(false)
   }
 
   async function handleSendNotif() {
@@ -350,6 +394,85 @@ export default function AdminPage() {
                 </div>
               </CardHeader>
               <PlayerStatusList players={players} submissions={submissions} />
+            </Card>
+
+            {/* Stats W/L */}
+            {stats && stats.total > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Historique des résultats</CardTitle>
+                </CardHeader>
+                <div className="flex items-center gap-6 flex-wrap">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-success">{stats.wins}</p>
+                    <p className="text-xs text-text-muted mt-0.5">Victoires</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-danger">{stats.losses}</p>
+                    <p className="text-xs text-text-muted mt-0.5">Défaites</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+                    <p className="text-xs text-text-muted mt-0.5">Total</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-accent">
+                      {stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0}%
+                    </p>
+                    <p className="text-xs text-text-muted mt-0.5">Win rate</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Gestion des joueurs */}
+            <Card>
+              <CardHeader><CardTitle>Joueurs</CardTitle></CardHeader>
+              <div className="space-y-2">
+                {players.map(player => (
+                  <div key={player.id} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={playerEdits[player.id] ?? player.name}
+                      onChange={e => setPlayerEdits(prev => ({ ...prev, [player.id]: e.target.value }))}
+                      className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
+                    />
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={playerSaving === player.id}
+                      disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
+                      onClick={() => handleSavePlayerName(player.id)}
+                    >
+                      Sauvegarder
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Heures disponibles */}
+            <Card>
+              <CardHeader><CardTitle>Heures disponibles</CardTitle></CardHeader>
+              <div className="flex items-center gap-2 flex-wrap mb-4">
+                {[17, 18, 19, 20, 21, 22, 23].map(h => (
+                  <button
+                    key={h}
+                    onClick={() => handleToggleHour(h)}
+                    className={[
+                      'px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
+                      availHours.includes(h)
+                        ? 'bg-accent/15 border-accent/40 text-accent'
+                        : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border',
+                    ].join(' ')}
+                  >
+                    {h}h
+                  </button>
+                ))}
+              </div>
+              <Button size="sm" loading={hoursSaving} onClick={handleSaveHours}>
+                {hoursSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+              </Button>
             </Card>
 
             {/* Matrice complète */}

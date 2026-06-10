@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { Scrim, ScrimStatus, ScrimResult } from '@/types'
 import { formatScrimDate } from '@/lib/dates'
 
@@ -17,6 +20,7 @@ const STATUS_CONFIG: Record<ScrimStatus, { label: string; dot: string; textColor
 }
 
 export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, isAdmin }: ScrimCardProps) {
+  const [editingResult, setEditingResult] = useState(false)
   const status = scrim.status ?? 'confirmed'
   const cfg = STATUS_CONFIG[status]
 
@@ -42,13 +46,19 @@ export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, 
           </p>
 
           {/* Résultat */}
-          {scrim.result && (
+          {scrim.result && !editingResult && (
             <div className="flex items-center gap-2 mt-1">
               <span className={`text-sm font-semibold ${scrim.result === 'win' ? 'text-success' : 'text-danger'}`}>
                 {scrim.result === 'win' ? '✓ Victoire' : '✗ Défaite'}
               </span>
-              {scrim.score && (
-                <span className="text-sm text-text-muted">{scrim.score}</span>
+              {scrim.score && <span className="text-sm text-text-muted">{scrim.score}</span>}
+              {onResultChange && (
+                <button
+                  onClick={() => setEditingResult(true)}
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors underline underline-offset-2"
+                >
+                  Modifier
+                </button>
               )}
             </div>
           )}
@@ -58,21 +68,29 @@ export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, 
           )}
 
           {/* Boutons résultat */}
-          {onResultChange && !scrim.result && status !== 'cancelled' && (
-            <div className="flex items-center gap-2 mt-3">
+          {onResultChange && (!scrim.result || editingResult) && status !== 'cancelled' && (
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
               <span className="text-xs text-text-muted">Résultat :</span>
               <button
-                onClick={() => onResultChange('win', '')}
+                onClick={() => { onResultChange('win', ''); setEditingResult(false) }}
                 className="text-xs font-medium px-2 py-1 rounded-lg bg-success/10 border border-success/20 text-success hover:bg-success/20 transition-colors"
               >
                 Victoire
               </button>
               <button
-                onClick={() => onResultChange('loss', '')}
+                onClick={() => { onResultChange('loss', ''); setEditingResult(false) }}
                 className="text-xs font-medium px-2 py-1 rounded-lg bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20 transition-colors"
               >
                 Défaite
               </button>
+              {editingResult && (
+                <button
+                  onClick={() => setEditingResult(false)}
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                >
+                  Annuler
+                </button>
+              )}
             </div>
           )}
 
