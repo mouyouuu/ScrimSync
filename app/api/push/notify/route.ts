@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase-server'
 import webpush from 'web-push'
 
 export async function POST(request: NextRequest) {
-  const { title, body, url } = await request.json()
+  const { title, body, url, player_ids } = await request.json()
 
   if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     return NextResponse.json({ error: 'VAPID keys not configured' }, { status: 500 })
@@ -16,7 +16,11 @@ export async function POST(request: NextRequest) {
   )
 
   const supabase = createServerClient()
-  const { data: subs } = await supabase.from('push_subscriptions').select('*')
+  let query = supabase.from('push_subscriptions').select('*')
+  if (Array.isArray(player_ids) && player_ids.length > 0) {
+    query = query.in('player_id', player_ids)
+  }
+  const { data: subs } = await query
   if (!subs?.length) return NextResponse.json({ sent: 0 })
 
   const payload = JSON.stringify({ title, body, url: url ?? '/' })

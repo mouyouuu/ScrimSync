@@ -160,18 +160,26 @@ export default function AdminPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const [relanceCopied, setRelanceCopied] = useState(false)
+  const [relanceSending, setRelanceSending] = useState(false)
+  const [relanceSent, setRelanceSent] = useState(false)
 
-  function copyRelanceMessage() {
+  async function handleRelanceAbsents() {
     const missing = players.filter(p => !submissions.some(s => s.player_id === p.id))
-    if (missing.length === 0) {
-      navigator.clipboard.writeText('✅ Tous les joueurs ont renseigné leurs disponibilités !')
-    } else {
-      const names = missing.map(p => p.name).join(', ')
-      navigator.clipboard.writeText(`⚠️ **Relance disponibilités** — Les joueurs suivants n'ont pas encore répondu cette semaine :\n${names}\n\nMerci de renseigner vos dispos dès que possible !`)
-    }
-    setRelanceCopied(true)
-    setTimeout(() => setRelanceCopied(false), 2000)
+    if (missing.length === 0) return
+    setRelanceSending(true)
+    await fetch('/api/push/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: '📅 Disponibilités manquantes',
+        body: 'Renseigne tes dispos pour cette semaine !',
+        url: '/',
+        player_ids: missing.map(p => p.id),
+      }),
+    })
+    setRelanceSending(false)
+    setRelanceSent(true)
+    setTimeout(() => setRelanceSent(false), 3000)
   }
 
   async function handleSavePlayerName(id: string) {
@@ -386,9 +394,14 @@ export default function AdminPage() {
               <CardHeader>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <CardTitle>Réponses</CardTitle>
-                  <Button size="sm" variant={relanceCopied ? 'success' : 'secondary'} onClick={copyRelanceMessage}>
-                    <span className="hidden sm:inline">{relanceCopied ? 'Copié !' : 'Relance Discord'}</span>
-                    <span className="sm:hidden">{relanceCopied ? 'Copié !' : 'Relance'}</span>
+                  <Button
+                    size="sm"
+                    variant={relanceSent ? 'success' : 'secondary'}
+                    loading={relanceSending}
+                    disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
+                    onClick={handleRelanceAbsents}
+                  >
+                    {relanceSent ? 'Envoyé !' : 'Relance'}
                   </Button>
                 </div>
               </CardHeader>
