@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import webpush from 'web-push'
 
-webpush.setVapidDetails(
-  'mailto:admin@scrimsync.app',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
-
 export async function POST(request: NextRequest) {
   const { title, body, url } = await request.json()
+
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return NextResponse.json({ error: 'VAPID keys not configured' }, { status: 500 })
+  }
+
+  webpush.setVapidDetails(
+    'mailto:admin@scrimsync.app',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
 
   const supabase = createServerClient()
   const { data: subs } = await supabase.from('push_subscriptions').select('*')
