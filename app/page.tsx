@@ -3,7 +3,7 @@ import { Logo } from '@/components/Logo'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 pt-safe">
       <div className="w-full max-w-sm flex flex-col items-center text-center animate-fade-in">
         <Logo size="lg" variant="icon" className="mb-6" />
 

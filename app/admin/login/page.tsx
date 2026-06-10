@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
+    <div className="min-h-screen bg-bg flex items-center justify-center p-6 pt-safe">
       <div className="w-full max-w-sm animate-fade-in">
 
         <Link href="/" className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors mb-8 w-fit">
