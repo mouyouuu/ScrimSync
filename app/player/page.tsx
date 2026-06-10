@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Logo } from '@/components/Logo'
 
 interface Player {
@@ -24,8 +25,15 @@ export default function PlayerSelectPage() {
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 pt-safe">
       <div className="w-full max-w-sm animate-fade-in">
-        <div className="flex justify-center mb-8">
-          <Logo size="md" />
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Retour
+          </Link>
+          <Logo size="sm" />
+          <div className="w-14" />
         </div>
 
         <h1 className="text-xl font-bold text-text-primary text-center mb-1">
