@@ -21,6 +21,9 @@ export interface AvailabilitySubmission {
   submitted_at: string
 }
 
+export type ScrimStatus = 'pending' | 'confirmed' | 'cancelled'
+export type ScrimResult = 'win' | 'loss' | null
+
 export interface Scrim {
   id: string
   week_start: string
@@ -29,6 +32,9 @@ export interface Scrim {
   opponent_name: string
   opponent_opgg_url: string
   notes?: string | null
+  status: ScrimStatus
+  result?: ScrimResult
+  score?: string | null
   created_at: string
 }
 
@@ -61,5 +67,6 @@ export interface ScrimFormData {
   opponent_name: string
   opponent_opgg_url: string
   notes: string
+  status: ScrimStatus
   week_start: string
 }

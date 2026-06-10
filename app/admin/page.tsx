@@ -127,10 +127,10 @@ export default function AdminPage() {
       return
     }
 
-    const lines = ['📅 **Scrims confirmés cette semaine**\n']
+    const lines = ['📅 **Scrims de la semaine**\n']
     scrims.forEach(scrim => {
-      lines.push(`**${formatScrimDate(weekStart, scrim.day_of_week, scrim.start_hour)}**`)
-      lines.push(`vs ${scrim.opponent_name}`)
+      const statusEmoji = scrim.status === 'cancelled' ? '❌' : scrim.status === 'pending' ? '⏳' : '✅'
+      lines.push(`${statusEmoji} **${formatScrimDate(weekStart, scrim.day_of_week, scrim.start_hour)}** — vs ${scrim.opponent_name}`)
       lines.push(`OP.GG : ${scrim.opponent_opgg_url}`)
       if (scrim.notes) lines.push(`Note : ${scrim.notes}`)
       lines.push('')
@@ -139,6 +139,29 @@ export default function AdminPage() {
     navigator.clipboard.writeText(lines.join('\n'))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const [relanceCopied, setRelanceCopied] = useState(false)
+
+  function copyRelanceMessage() {
+    const missing = players.filter(p => !submissions.some(s => s.player_id === p.id))
+    if (missing.length === 0) {
+      navigator.clipboard.writeText('✅ Tous les joueurs ont renseigné leurs disponibilités !')
+    } else {
+      const names = missing.map(p => p.name).join(', ')
+      navigator.clipboard.writeText(`⚠️ **Relance disponibilités** — Les joueurs suivants n'ont pas encore répondu cette semaine :\n${names}\n\nMerci de renseigner vos dispos dès que possible !`)
+    }
+    setRelanceCopied(true)
+    setTimeout(() => setRelanceCopied(false), 2000)
+  }
+
+  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string) {
+    await fetch(`/api/scrims/${scrimId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...scrims.find(s => s.id === scrimId), result, score }),
+    })
+    await loadData()
   }
 
   return (
@@ -255,6 +278,7 @@ export default function AdminPage() {
                       isAdmin
                       onEdit={() => setScrimModal({ open: true, scrim })}
                       onDelete={() => setDeleteConfirm(scrim.id)}
+                      onResultChange={(result, score) => handleResultChange(scrim.id, result as 'win' | 'loss', score)}
                     />
                   ))}
                 </div>
@@ -264,7 +288,13 @@ export default function AdminPage() {
             {/* Réponses joueurs */}
             <Card>
               <CardHeader>
-                <CardTitle>Réponses</CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle>Réponses</CardTitle>
+                  <Button size="sm" variant={relanceCopied ? 'success' : 'secondary'} onClick={copyRelanceMessage}>
+                    <span className="hidden sm:inline">{relanceCopied ? 'Copié !' : 'Relance Discord'}</span>
+                    <span className="sm:hidden">{relanceCopied ? 'Copié !' : 'Relance'}</span>
+                  </Button>
+                </div>
               </CardHeader>
               <PlayerStatusList players={players} submissions={submissions} />
             </Card>
