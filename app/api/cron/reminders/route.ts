@@ -40,26 +40,15 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient()
   const now = new Date()
-
-  const { data: scrims } = await supabase
-    .from('scrims')
-    .select('*')
-    .eq('status', 'confirmed')
-    .is('result', null)
-
-  if (!scrims?.length) return NextResponse.json({ sent: 0 })
+  const isTest = request.nextUrl.searchParams.get('test') === 'true'
 
   const { data: subs } = await supabase
     .from('push_subscriptions')
     .select('endpoint, p256dh, auth')
 
-  if (!subs?.length) return NextResponse.json({ sent: 0 })
-
-  const isTest = request.nextUrl.searchParams.get('test') === 'true'
-  let sent = 0
-
   if (isTest) {
-    // Mode test : envoie une notif immédiatement sans vérifier l'heure
+    if (!subs?.length) return NextResponse.json({ sent: 0, test: true, error: 'no_subscriptions' })
+    let sent = 0
     for (const sub of subs) {
       try {
         await webpush.sendNotification(
@@ -67,12 +56,23 @@ export async function GET(request: NextRequest) {
           JSON.stringify({ title: '🔔 Test cron', body: 'Les rappels automatiques fonctionnent !', url: '/' })
         )
         sent++
-      } catch {
-        // Subscription expirée ou invalide
+      } catch (err: unknown) {
+        console.error('send error', err)
       }
     }
-    return NextResponse.json({ sent, test: true })
+    return NextResponse.json({ sent, test: true, subs: subs.length })
   }
+
+  const { data: scrims } = await supabase
+    .from('scrims')
+    .select('*')
+    .eq('status', 'confirmed')
+    .is('result', null)
+
+  if (!scrims?.length) return NextResponse.json({ sent: 0, checked: 0 })
+  if (!subs?.length) return NextResponse.json({ sent: 0, checked: scrims.length })
+
+  let sent = 0
 
   for (const scrim of scrims) {
     const scrimDate = getScrimUTCDate(scrim.week_start, scrim.day_of_week, scrim.start_hour)
