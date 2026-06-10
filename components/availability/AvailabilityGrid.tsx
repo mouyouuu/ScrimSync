@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { APP_CONFIG } from '@/config/app'
 import { formatShortDayWithDate, formatHour } from '@/lib/dates'
 import { slotKey } from '@/lib/availability'
@@ -18,9 +18,14 @@ export function AvailabilityGrid({
   onToggle,
   disabled = false,
 }: AvailabilityGridProps) {
+  const [animating, setAnimating] = useState<Set<string>>(new Set())
   const gridRef = useRef<HTMLDivElement>(null)
   const selectedRef = useRef(selected)
   selectedRef.current = selected
+
+  function triggerAnim(key: string) {
+    setAnimating(prev => new Set([...prev, key]))
+  }
 
   const drag = useRef<{
     active: boolean
@@ -51,6 +56,7 @@ export function AvailabilityGrid({
         visited: new Set([key]),
       }
       navigator.vibrate?.(8)
+      triggerAnim(key)
       onToggle(key)
     }
 
@@ -64,8 +70,8 @@ export function AvailabilityGrid({
       drag.current.visited.add(key)
       navigator.vibrate?.(6)
       const isSelected = selectedRef.current.has(key)
-      if (drag.current.selecting && !isSelected) onToggle(key)
-      if (!drag.current.selecting && isSelected) onToggle(key)
+      if (drag.current.selecting && !isSelected) { triggerAnim(key); onToggle(key) }
+      if (!drag.current.selecting && isSelected) { triggerAnim(key); onToggle(key) }
     }
 
     function onTouchEnd() {
@@ -84,7 +90,7 @@ export function AvailabilityGrid({
   }, [disabled, onToggle])
 
   return (
-    <div ref={gridRef} className="w-full select-none">
+    <div ref={gridRef} className="w-full select-none" data-no-pull="true">
       {/* Header */}
       <div className="grid mb-1" style={{ gridTemplateColumns: '36px repeat(7, 1fr)', gap: '3px' }}>
         <div />
@@ -118,14 +124,18 @@ export function AvailabilityGrid({
                 <button
                   key={day}
                   data-slot-key={key}
-                  onClick={() => !disabled && onToggle(key)}
+                  onClick={() => { if (!disabled) { triggerAnim(key); onToggle(key) } }}
+                  onAnimationEnd={() => setAnimating(prev => { const n = new Set(prev); n.delete(key); return n })}
                   disabled={disabled}
                   aria-label={`${formatShortDayWithDate(weekStart, day)} ${formatHour(hour)}`}
                   aria-pressed={isSelected}
                   className={[
                     'h-9 w-full rounded-md border transition-all duration-150',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-bg',
-                    disabled ? 'cursor-default opacity-60' : 'cursor-pointer active:scale-95',
+                    disabled ? 'cursor-default opacity-60' : 'cursor-pointer',
+                    animating.has(key)
+                      ? (isSelected ? 'animate-slot-pop' : 'animate-slot-pop-out')
+                      : '',
                     isSelected
                       ? 'bg-accent/20 border-accent/50 shadow-[0_0_0_1px_rgba(99,102,241,0.3)]'
                       : 'bg-bg-elevated border-border-subtle hover:border-border hover:bg-bg-hover',

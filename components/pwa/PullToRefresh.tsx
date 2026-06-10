@@ -35,6 +35,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
   useEffect(() => {
     function onTouchStart(e: TouchEvent) {
       if (window.scrollY > 5 || refreshingRef.current) return
+      if ((e.target as Element).closest?.('[data-no-pull]')) return
       startYRef.current = e.touches[0].clientY
       isPullingRef.current = true
     }
@@ -98,14 +99,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
       </div>
 
       {/* Contenu */}
-      <div
-        style={{
-          transform: pullY > 0 ? `translateY(${pullY}px)` : undefined,
-          transition: pullY === 0 ? 'transform 0.3s ease' : 'none',
-        }}
-      >
-        {children}
-      </div>
+      <div>{children}</div>
     </>
   )
 }
