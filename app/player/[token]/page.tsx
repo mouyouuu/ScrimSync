@@ -20,6 +20,16 @@ import {
 } from '@/lib/dates'
 import { buildPlayerAvailabilitySet } from '@/lib/availability'
 import { Player, Availability, Scrim, SaveStatus } from '@/types'
+import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
+
+function isScrimToday(scrim: Scrim, wStart: Date): boolean {
+  const d = new Date(wStart)
+  d.setDate(d.getDate() + (scrim.day_of_week - 1))
+  const today = new Date()
+  return d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+}
 
 type PlayerTab = 'dispo' | 'scrims' | 'stats'
 
@@ -426,12 +436,21 @@ export default function PlayerPage({ params }: PageProps) {
                 ) : (
                   <div className="space-y-3">
                     {scrims.map(scrim => (
-                      <ScrimCard
-                        key={scrim.id}
-                        scrim={scrim}
-                        weekStart={weekStart}
-                        onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
-                      />
+                      <div key={scrim.id} className="space-y-2">
+                        <ScrimCard
+                          scrim={scrim}
+                          weekStart={weekStart}
+                          onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
+                        />
+                        {isScrimToday(scrim, weekStart) && (
+                          <ReadyCheckCard
+                            scrimId={scrim.id}
+                            opponentName={scrim.opponent_name}
+                            startHour={scrim.start_hour}
+                            playerId={player.id}
+                          />
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}

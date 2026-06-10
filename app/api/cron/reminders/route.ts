@@ -80,11 +80,11 @@ export async function GET(request: NextRequest) {
 
     let notification: { title: string; body: string } | null = null
 
-    // 1h avant : fenêtre 45-75 min
-    if (diffMin >= 45 && diffMin < 75) {
+    // 3h avant (ready check) : fenêtre 165-195 min
+    if (diffMin >= 165 && diffMin < 195) {
       notification = {
-        title: '⚔️ Scrim dans 1h !',
-        body: `vs ${scrim.opponent_name} à ${scrim.start_hour}h`,
+        title: '✅ Ready Check — Scrim ce soir !',
+        body: `vs ${scrim.opponent_name} à ${scrim.start_hour}h · Confirme ta présence`,
       }
     }
     // 24h avant : fenêtre 23h45 - 24h15

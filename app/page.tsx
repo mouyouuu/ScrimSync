@@ -1,7 +1,32 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/Logo'
 
 export default function HomePage() {
+  const router = useRouter()
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('player_token')
+    if (token) { router.replace(`/player/${token}`); return }
+
+    const isAdmin = document.cookie.split(';').some(c => c.trim().startsWith('admin_session=authenticated'))
+    if (isAdmin) { router.replace('/admin'); return }
+
+    setReady(true)
+  }, [router])
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 pt-safe">
       <div className="w-full max-w-sm flex flex-col items-center text-center animate-fade-in">

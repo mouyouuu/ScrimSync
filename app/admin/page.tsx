@@ -25,6 +25,16 @@ import {
 } from '@/lib/dates'
 import { buildAvailabilityMatrix, getPerfectSlots } from '@/lib/availability'
 import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData } from '@/types'
+import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
+
+function isScrimToday(scrim: Scrim, wStart: Date): boolean {
+  const d = new Date(wStart)
+  d.setDate(d.getDate() + (scrim.day_of_week - 1))
+  const today = new Date()
+  return d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+}
 import { APP_CONFIG } from '@/config/app'
 import { useRouter } from 'next/navigation'
 
@@ -100,6 +110,9 @@ export default function AdminPage() {
   const [stats, setStats] = useState<{ wins: number; losses: number; total: number } | null>(null)
   const [playerEdits, setPlayerEdits] = useState<Record<string, string>>({})
   const [playerSaving, setPlayerSaving] = useState<string | null>(null)
+  const [newPlayerName, setNewPlayerName] = useState('')
+  const [newPlayerCreating, setNewPlayerCreating] = useState(false)
+  const [newPlayerLink, setNewPlayerLink] = useState<string | null>(null)
   const [availHours, setAvailHours] = useState<number[]>([19, 20, 21, 22, 23])
   const [hoursSaving, setHoursSaving] = useState(false)
   const [relanceSending, setRelanceSending] = useState(false)
@@ -228,6 +241,23 @@ export default function AdminPage() {
     setRelanceSending(false)
     setRelanceSent(true)
     setTimeout(() => setRelanceSent(false), 3000)
+  }
+
+  async function handleCreatePlayer() {
+    if (!newPlayerName.trim()) return
+    setNewPlayerCreating(true)
+    const res = await fetch('/api/players', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newPlayerName.trim() }),
+    })
+    const data = await res.json()
+    if (data.token) {
+      setNewPlayerLink(`${window.location.origin}/player/${data.token}`)
+      setNewPlayerName('')
+      await loadData()
+    }
+    setNewPlayerCreating(false)
   }
 
   async function handleSavePlayerName(id: string) {
@@ -374,15 +404,25 @@ export default function AdminPage() {
                   ) : (
                     <div className="space-y-3">
                       {scrims.map(scrim => (
-                        <ScrimCard
-                          key={scrim.id}
-                          scrim={scrim}
-                          weekStart={weekStart}
-                          isAdmin
-                          onEdit={() => setScrimModal({ open: true, scrim })}
-                          onDelete={() => setDeleteConfirm(scrim.id)}
-                          onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
-                        />
+                        <div key={scrim.id} className="space-y-2">
+                          <ScrimCard
+                            scrim={scrim}
+                            weekStart={weekStart}
+                            isAdmin
+                            onEdit={() => setScrimModal({ open: true, scrim })}
+                            onDelete={() => setDeleteConfirm(scrim.id)}
+                            onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
+                          />
+                          {isScrimToday(scrim, weekStart) && (
+                            <ReadyCheckCard
+                              scrimId={scrim.id}
+                              opponentName={scrim.opponent_name}
+                              startHour={scrim.start_hour}
+                              isAdmin
+                              players={players}
+                            />
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
@@ -525,6 +565,39 @@ export default function AdminPage() {
                         </Button>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-border-subtle space-y-3">
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">Ajouter un joueur</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nom du joueur"
+                        value={newPlayerName}
+                        onChange={e => setNewPlayerName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleCreatePlayer()}
+                        className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                      />
+                      <Button
+                        size="sm"
+                        loading={newPlayerCreating}
+                        disabled={!newPlayerName.trim() || newPlayerCreating}
+                        onClick={handleCreatePlayer}
+                      >
+                        Créer
+                      </Button>
+                    </div>
+                    {newPlayerLink && (
+                      <div className="flex items-center gap-2 bg-success/8 border border-success/20 rounded-lg px-3 py-2 animate-fade-in">
+                        <span className="text-xs text-success font-medium flex-1 truncate">{newPlayerLink}</span>
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(newPlayerLink); setNewPlayerLink(null) }}
+                          className="text-xs text-success font-semibold flex-shrink-0 hover:opacity-70 transition-opacity"
+                        >
+                          Copier
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </Card>
 
