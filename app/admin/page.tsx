@@ -210,7 +210,9 @@ export default function AdminPage() {
   }
 
   async function handleRelanceAbsents() {
-    const missing = players.filter(p => !submissions.some(s => s.player_id === p.id))
+    const missing = players.filter(p =>
+      !submissions.some(s => s.player_id === p.id) && !absences.includes(p.id)
+    )
     if (missing.length === 0) return
     setRelanceSending(true)
     await fetch('/api/push/notify', {
