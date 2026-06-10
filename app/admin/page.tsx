@@ -25,6 +25,7 @@ import { buildAvailabilityMatrix, getPerfectSlots } from '@/lib/availability'
 import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData } from '@/types'
 import { APP_CONFIG } from '@/config/app'
 import { useRouter } from 'next/navigation'
+import { SkeletonAdminContent, SkeletonStats } from '@/components/ui/Skeleton'
 
 export default function AdminPage() {
   const router = useRouter()
@@ -259,9 +260,7 @@ export default function AdminPage() {
       <PullToRefresh onRefresh={loadData}>
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-          </div>
+          <SkeletonAdminContent />
         ) : (
           <>
             {/* Push notifications */}
@@ -414,9 +413,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
               {!stats ? (
-                <div className="flex justify-center py-6">
-                  <div className="h-5 w-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-                </div>
+                <SkeletonStats />
               ) : stats.total === 0 ? (
                 <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
               ) : (

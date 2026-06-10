@@ -21,6 +21,7 @@ import {
 import { buildPlayerAvailabilitySet, slotKey } from '@/lib/availability'
 import { APP_CONFIG } from '@/config/app'
 import { Player, Availability, Scrim, SaveStatus } from '@/types'
+import { SkeletonAvailabilityGrid, SkeletonScrimCard, SkeletonStats } from '@/components/ui/Skeleton'
 
 interface PageProps {
   params: Promise<{ token: string }>
@@ -38,6 +39,7 @@ export default function PlayerPage({ params }: PageProps) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [loadingData, setLoadingData] = useState(true)
   const [stats, setStats] = useState<{ wins: number; losses: number; total: number; scrims: Scrim[] } | null>(null)
+  const [countdown, setCountdown] = useState<{ text: string; scrim: Scrim } | null>(null)
 
   const ws = formatWeekStart(weekStart)
 
@@ -112,6 +114,40 @@ export default function PlayerPage({ params }: PageProps) {
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    function formatDiff(ms: number): string {
+      const totalMin = Math.floor(ms / 60000)
+      const h = Math.floor(totalMin / 60)
+      const m = totalMin % 60
+      if (totalMin < 1) return 'quelques instants'
+      if (h > 0 && m > 0) return `${h}h${String(m).padStart(2, '0')}`
+      if (h > 0) return `${h}h`
+      return `${m} min`
+    }
+
+    function update() {
+      const now = Date.now()
+      const upcoming = scrims
+        .filter(s => s.status === 'confirmed')
+        .map(s => {
+          const d = new Date(weekStart)
+          d.setDate(d.getDate() + (s.day_of_week - 1))
+          d.setHours(s.start_hour, 0, 0, 0)
+          return { scrim: s, ms: d.getTime() - now }
+        })
+        .filter(({ ms }) => ms > 0 && ms <= 24 * 60 * 60 * 1000)
+        .sort((a, b) => a.ms - b.ms)
+
+      if (upcoming.length === 0) { setCountdown(null); return }
+      const { scrim, ms } = upcoming[0]
+      setCountdown({ text: formatDiff(ms), scrim })
+    }
+
+    update()
+    const id = setInterval(update, 30000)
+    return () => clearInterval(id)
+  }, [scrims, weekStart])
 
   async function handleSave() {
     if (!player) return
@@ -194,6 +230,24 @@ export default function PlayerPage({ params }: PageProps) {
           </p>
         </div>
 
+        {/* Countdown prochain scrim */}
+        {countdown && (
+          <div className="flex items-center gap-3 bg-accent/10 border border-accent/25 rounded-xl px-4 py-3 animate-fade-in">
+            <span className="h-2 w-2 rounded-full bg-accent animate-pulse flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-primary truncate">
+                vs {countdown.scrim.opponent_name}
+              </p>
+              <p className="text-xs text-accent font-medium mt-0.5">
+                Dans {countdown.text}
+              </p>
+            </div>
+            <div className="ml-auto flex-shrink-0 text-right">
+              <p className="text-xs text-text-muted">{countdown.scrim.start_hour}h00</p>
+            </div>
+          </div>
+        )}
+
         {/* Push notifications */}
         <PushNotifications playerId={player.id} />
 
@@ -207,9 +261,7 @@ export default function PlayerPage({ params }: PageProps) {
           </CardHeader>
 
           {loadingData ? (
-            <div className="flex justify-center py-8">
-              <div className="h-6 w-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-            </div>
+            <SkeletonAvailabilityGrid />
           ) : (
             <AvailabilityGrid
               weekStart={weekStart}
@@ -251,7 +303,12 @@ export default function PlayerPage({ params }: PageProps) {
           <CardHeader>
             <CardTitle>Scrims confirmés</CardTitle>
           </CardHeader>
-          {scrims.length === 0 ? (
+          {loadingData ? (
+            <div className="space-y-3">
+              <SkeletonScrimCard />
+              <SkeletonScrimCard />
+            </div>
+          ) : scrims.length === 0 ? (
             <EmptyState
               title="Aucun scrim confirmé cette semaine"
               description="L'admin confirmera les scrims une fois les disponibilités reçues."
@@ -274,9 +331,7 @@ export default function PlayerPage({ params }: PageProps) {
         <Card>
           <CardHeader><CardTitle>Statistiques de l'équipe</CardTitle></CardHeader>
           {!stats ? (
-            <div className="flex justify-center py-6">
-              <div className="h-5 w-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-            </div>
+            <SkeletonStats />
           ) : stats.total === 0 ? (
             <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
           ) : (
