@@ -113,6 +113,7 @@ export default function AdminPage() {
   const [newPlayerName, setNewPlayerName] = useState('')
   const [newPlayerCreating, setNewPlayerCreating] = useState(false)
   const [newPlayerLink, setNewPlayerLink] = useState<string | null>(null)
+  const [deletePlayerConfirm, setDeletePlayerConfirm] = useState<string | null>(null)
   const [availHours, setAvailHours] = useState<number[]>([19, 20, 21, 22, 23])
   const [hoursSaving, setHoursSaving] = useState(false)
   const [relanceSending, setRelanceSending] = useState(false)
@@ -258,6 +259,12 @@ export default function AdminPage() {
       await loadData()
     }
     setNewPlayerCreating(false)
+  }
+
+  async function handleDeletePlayer(id: string) {
+    await fetch(`/api/players/${id}`, { method: 'DELETE' })
+    setDeletePlayerConfirm(null)
+    await loadData()
   }
 
   async function handleSavePlayerName(id: string) {
@@ -563,6 +570,15 @@ export default function AdminPage() {
                         >
                           Sauvegarder
                         </Button>
+                        <button
+                          onClick={() => setDeletePlayerConfirm(player.id)}
+                          className="flex-shrink-0 p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all"
+                          title="Supprimer"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                            <path d="M2 4h11M5 4V2.5A1.5 1.5 0 016.5 1h2A1.5 1.5 0 0110 2.5V4M6 7v4M9 7v4M3 4l.8 8.5A1 1 0 004.8 13.5h5.4a1 1 0 001-.995L12 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -669,6 +685,29 @@ export default function AdminPage() {
           <Button
             variant="danger"
             onClick={() => deleteConfirm && handleDeleteScrim(deleteConfirm)}
+            className="flex-1"
+          >
+            Supprimer
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={deletePlayerConfirm !== null}
+        onClose={() => setDeletePlayerConfirm(null)}
+        title="Supprimer le joueur"
+        size="sm"
+      >
+        <p className="text-sm text-text-secondary mb-5">
+          Cette action supprimera le joueur et toutes ses données. Irréversible.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setDeletePlayerConfirm(null)} className="flex-1">
+            Annuler
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => deletePlayerConfirm && handleDeletePlayer(deletePlayerConfirm)}
             className="flex-1"
           >
             Supprimer
