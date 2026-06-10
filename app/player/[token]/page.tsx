@@ -77,6 +77,8 @@ export default function PlayerPage({ params }: PageProps) {
   const [stats, setStats] = useState<{ wins: number; losses: number; total: number; scrims: Scrim[] } | null>(null)
   const [activeTab, setActiveTab] = useState<PlayerTab>('dispo')
   const [countdown, setCountdown] = useState<{ text: string; scrim: Scrim } | null>(null)
+  const [isAbsent, setIsAbsent] = useState(false)
+  const [absentLoading, setAbsentLoading] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -102,11 +104,13 @@ export default function PlayerPage({ params }: PageProps) {
     if (!player) return
     setLoadingData(true)
     try {
-      const [availRes, scrimsRes] = await Promise.all([
+      const [availRes, scrimsRes, absentRes] = await Promise.all([
         fetch(`/api/availability?week_start=${ws}&player_id=${player.id}`),
         fetch(`/api/scrims?week_start=${ws}`),
+        fetch(`/api/availability/absent?week_start=${ws}&player_id=${player.id}`),
       ])
-      const [availData, scrimsData] = await Promise.all([availRes.json(), scrimsRes.json()])
+      const [availData, scrimsData, absentData] = await Promise.all([availRes.json(), scrimsRes.json(), absentRes.json()])
+      setIsAbsent(absentData.absent ?? false)
       if (Array.isArray(availData)) {
         setAvailabilities(availData)
         setSelected(buildPlayerAvailabilitySet(availData))
@@ -201,6 +205,41 @@ export default function PlayerPage({ params }: PageProps) {
     }
   }
 
+  async function handleToggleAbsent() {
+    if (!player) return
+    setAbsentLoading(true)
+    const next = !isAbsent
+    await fetch('/api/availability/absent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: player.id, week_start: ws, absent: next }),
+    })
+    setIsAbsent(next)
+    if (next) setSelected(new Set())
+    setAbsentLoading(false)
+  }
+
+  async function copyLastWeek() {
+    if (!player) return
+    const prevDate = new Date(weekStart)
+    prevDate.setDate(prevDate.getDate() - 7)
+    const prevWs = prevDate.toISOString().split('T')[0]
+    const res = await fetch(`/api/availability?week_start=${prevWs}&player_id=${player.id}`)
+    const data = await res.json()
+    if (Array.isArray(data) && data.length > 0) {
+      const keys = new Set(data.map((a: { day_of_week: number; start_hour: number }) => `${a.day_of_week}-${a.start_hour}`))
+      setSelected(keys)
+      if (isAbsent) {
+        await fetch('/api/availability/absent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player_id: player.id, week_start: ws, absent: false }),
+        })
+        setIsAbsent(false)
+      }
+    }
+  }
+
   if (notFound) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6">
@@ -261,48 +300,94 @@ export default function PlayerPage({ params }: PageProps) {
             {activeTab === 'dispo' && <>
               <PushNotifications playerId={player.id} />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Mes disponibilités</CardTitle>
-                  <p className="text-xs text-text-muted mt-1">
-                    Coche les heures auxquelles tu peux être prêt à lancer un scrim.
+              {/* Toggle absent */}
+              <button
+                onClick={handleToggleAbsent}
+                disabled={absentLoading}
+                className={[
+                  'flex items-center gap-3 w-full rounded-xl border px-4 py-3 transition-all duration-200 text-left',
+                  isAbsent
+                    ? 'bg-warning/10 border-warning/30'
+                    : 'bg-bg-elevated border-border-subtle',
+                ].join(' ')}
+              >
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${isAbsent ? 'text-warning' : 'text-text-secondary'}`}>
+                    Absent cette semaine
                   </p>
-                </CardHeader>
-
-                {loadingData ? (
-                  <SkeletonAvailabilityGrid />
-                ) : (
-                  <AvailabilityGrid
-                    weekStart={weekStart}
-                    selected={selected}
-                    onToggle={toggleSlot}
-                    disabled={saveStatus === 'saving'}
-                  />
-                )}
-
-                <div className="mt-4 flex items-center gap-3">
-                  <Button
-                    onClick={handleSave}
-                    loading={saveStatus === 'saving'}
-                    disabled={saveStatus === 'saving'}
-                    className="flex-1 sm:flex-none"
-                    size="lg"
-                  >
-                    Enregistrer
-                  </Button>
-                  {saveStatus === 'success' && (
-                    <span className="flex items-center gap-1.5 text-sm text-success animate-fade-in">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      Disponibilités enregistrées
-                    </span>
-                  )}
-                  {saveStatus === 'error' && (
-                    <span className="text-sm text-danger animate-fade-in">Erreur, réessaie.</span>
+                  {isAbsent && (
+                    <p className="text-xs text-text-muted mt-0.5">Signalé à l'admin · appuie pour annuler</p>
                   )}
                 </div>
-              </Card>
+                <div className={[
+                  'relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0',
+                  isAbsent ? 'bg-warning' : 'bg-border-subtle border border-border',
+                ].join(' ')}>
+                  <span className={[
+                    'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+                    isAbsent ? 'left-[18px]' : 'left-0.5',
+                  ].join(' ')} />
+                </div>
+              </button>
+
+              {!isAbsent && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <CardTitle>Mes disponibilités</CardTitle>
+                        <p className="text-xs text-text-muted mt-1">
+                          Coche les heures auxquelles tu peux être prêt à lancer un scrim.
+                        </p>
+                      </div>
+                      <button
+                        onClick={copyLastWeek}
+                        className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors flex-shrink-0 mt-0.5"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M9 3H3a1 1 0 00-1 1v5a1 1 0 001 1h6a1 1 0 001-1V4a1 1 0 00-1-1z" stroke="currentColor" strokeWidth="1.2"/>
+                          <path d="M8 3V2a1 1 0 00-1-1H5a1 1 0 00-1 1v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                        </svg>
+                        Sem. passée
+                      </button>
+                    </div>
+                  </CardHeader>
+
+                  {loadingData ? (
+                    <SkeletonAvailabilityGrid />
+                  ) : (
+                    <AvailabilityGrid
+                      weekStart={weekStart}
+                      selected={selected}
+                      onToggle={toggleSlot}
+                      disabled={saveStatus === 'saving'}
+                    />
+                  )}
+
+                  <div className="mt-4 flex items-center gap-3">
+                    <Button
+                      onClick={handleSave}
+                      loading={saveStatus === 'saving'}
+                      disabled={saveStatus === 'saving'}
+                      className="flex-1 sm:flex-none"
+                      size="lg"
+                    >
+                      Enregistrer
+                    </Button>
+                    {saveStatus === 'success' && (
+                      <span className="flex items-center gap-1.5 text-sm text-success animate-fade-in">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Disponibilités enregistrées
+                      </span>
+                    )}
+                    {saveStatus === 'error' && (
+                      <span className="text-sm text-danger animate-fade-in">Erreur, réessaie.</span>
+                    )}
+                  </div>
+                </Card>
+              )}
 
               <InstallPWAHint />
             </>}

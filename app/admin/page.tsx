@@ -104,13 +104,14 @@ export default function AdminPage() {
   const [hoursSaving, setHoursSaving] = useState(false)
   const [relanceSending, setRelanceSending] = useState(false)
   const [relanceSent, setRelanceSent] = useState(false)
+  const [absences, setAbsences] = useState<string[]>([])
 
   const ws = formatWeekStart(weekStart)
 
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [playersRes, availRes, subsRes, scrimsRes] = await Promise.all([
+      const [playersRes, availRes, subsRes, scrimsRes, absencesRes] = await Promise.all([
         fetch('/api/players'),
         fetch(`/api/availability?week_start=${ws}`),
         fetch('/api/availability', {
@@ -119,13 +120,15 @@ export default function AdminPage() {
           body: JSON.stringify({ week_start: ws }),
         }),
         fetch(`/api/scrims?week_start=${ws}`),
+        fetch(`/api/availability/absent?week_start=${ws}`),
       ])
 
-      const [playersData, availData, subsData, scrimsData] = await Promise.all([
+      const [playersData, availData, subsData, scrimsData, absencesData] = await Promise.all([
         playersRes.json(),
         availRes.json(),
         subsRes.json(),
         scrimsRes.json(),
+        absencesRes.json(),
       ])
 
       if (Array.isArray(playersData)) {
@@ -137,6 +140,7 @@ export default function AdminPage() {
       if (Array.isArray(availData)) setAvailabilities(availData)
       if (Array.isArray(subsData)) setSubmissions(subsData)
       if (Array.isArray(scrimsData)) setScrims(scrimsData)
+      if (Array.isArray(absencesData)) setAbsences(absencesData.map((a: { player_id: string }) => a.player_id))
     } catch (e) {
       console.error(e)
     } finally {
@@ -282,6 +286,16 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
+            {!loading && players.length > 0 && (() => {
+              const responded = submissions.length + absences.filter(id => !submissions.some(s => s.player_id === id)).length
+              const all = responded >= players.length
+              return (
+                <div className={`flex items-center gap-0.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${all ? 'bg-success/10 border-success/30 text-success' : 'bg-bg-elevated border-border-subtle text-text-secondary'}`}>
+                  <span>{responded}</span>
+                  <span className="text-text-muted font-normal">/{players.length}</span>
+                </div>
+              )
+            })()}
             <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
             <button
               onClick={handleLogout}
@@ -400,7 +414,7 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <PlayerStatusList players={players} submissions={submissions} />
+                  <PlayerStatusList players={players} submissions={submissions} absenceIds={absences} />
                 </Card>
 
                 <Card>

@@ -4,18 +4,21 @@ import { Badge } from '@/components/ui/Badge'
 interface PlayerStatusListProps {
   players: Player[]
   submissions: AvailabilitySubmission[]
+  absenceIds?: string[]
 }
 
-export function PlayerStatusList({ players, submissions }: PlayerStatusListProps) {
+export function PlayerStatusList({ players, submissions, absenceIds = [] }: PlayerStatusListProps) {
   const submittedIds = new Set(submissions.map(s => s.player_id))
+  const absentSet = new Set(absenceIds)
 
-  const answered = players.filter(p => submittedIds.has(p.id))
-  const pending = players.filter(p => !submittedIds.has(p.id))
+  const responded = players.filter(p => submittedIds.has(p.id) || absentSet.has(p.id)).length
+  const pending = players.filter(p => !submittedIds.has(p.id) && !absentSet.has(p.id)).length
 
   return (
     <div className="space-y-2">
       {players.map(player => {
         const hasSubmitted = submittedIds.has(player.id)
+        const isAbsent = absentSet.has(player.id)
         return (
           <div
             key={player.id}
@@ -29,6 +32,13 @@ export function PlayerStatusList({ players, submissions }: PlayerStatusListProps
                 </svg>
                 Répondu
               </Badge>
+            ) : isAbsent ? (
+              <Badge variant="warning">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M5 2v3M5 7h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Absent
+              </Badge>
             ) : (
               <Badge variant="muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-pulse" />
@@ -39,7 +49,8 @@ export function PlayerStatusList({ players, submissions }: PlayerStatusListProps
         )
       })}
       <div className="pt-1 text-xs text-text-muted">
-        {answered.length}/{players.length} joueurs ont répondu
+        {responded}/{players.length} ont répondu
+        {pending > 0 && <span className="ml-1">· {pending} en attente</span>}
       </div>
     </div>
   )
