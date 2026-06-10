@@ -22,17 +22,12 @@ export default function HomePage() {
             Accéder à l'admin
           </Link>
 
-          <div className="rounded-xl border border-border-subtle bg-bg-surface p-4 text-left">
-            <p className="text-xs text-text-muted mb-3 font-medium uppercase tracking-wide">
-              Accès joueur
-            </p>
-            <p className="text-sm text-text-secondary">
-              Utilisez votre lien personnel envoyé par l'admin.
-            </p>
-            <div className="mt-2 rounded-lg bg-bg-elevated px-3 py-2 font-mono text-xs text-text-muted">
-              /player/votre-token
-            </div>
-          </div>
+          <Link
+            href="/player"
+            className="flex h-11 w-full items-center justify-center rounded-xl border border-border-subtle bg-bg-surface hover:bg-bg-elevated active:scale-[0.98] text-sm font-semibold text-text-primary transition-all duration-150"
+          >
+            Accès joueur
+          </Link>
         </div>
 
         <p className="mt-10 text-xs text-text-disabled">
