@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Logo } from '@/components/Logo'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,15 +24,14 @@ export default function AdminLoginPage() {
       })
 
       if (res.ok) {
-        router.push('/admin')
-        router.refresh()
+        window.location.href = '/admin'
       } else {
         const data = await res.json()
-        setError(data.error || 'Erreur de connexion')
+        setError(data.error || 'Mot de passe incorrect')
+        setLoading(false)
       }
     } catch {
-      setError('Erreur réseau')
-    } finally {
+      setError('Erreur réseau, réessaie')
       setLoading(false)
     }
   }
@@ -41,6 +39,14 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
       <div className="w-full max-w-sm animate-fade-in">
+
+        <Link href="/" className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors mb-8 w-fit">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Retour à l'accueil
+        </Link>
+
         <div className="flex justify-center mb-8">
           <Logo size="md" />
         </div>
@@ -57,11 +63,19 @@ export default function AdminLoginPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              error={error}
               placeholder="••••••••"
               autoFocus
               autoComplete="current-password"
             />
+            {error && (
+              <div className="flex items-center gap-2 rounded-lg bg-danger/10 border border-danger/20 px-3 py-2.5">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
+                  <circle cx="7" cy="7" r="6" stroke="#ef4444" strokeWidth="1.5"/>
+                  <path d="M7 4v3M7 9.5v.5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <p className="text-sm text-danger">{error}</p>
+              </div>
+            )}
             <Button type="submit" loading={loading} className="w-full" size="lg">
               Accéder
             </Button>
