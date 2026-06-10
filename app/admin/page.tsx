@@ -320,6 +320,7 @@ export default function AdminPage() {
                       </div>
                       <Button
                         size="sm"
+                        className="flex-shrink-0"
                         onClick={() =>
                           setScrimModal({
                             open: true,
@@ -328,7 +329,7 @@ export default function AdminPage() {
                           })
                         }
                       >
-                        Créer un scrim
+                        + Scrim
                       </Button>
                     </div>
                   ))}
