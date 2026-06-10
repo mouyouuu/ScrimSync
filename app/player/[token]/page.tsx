@@ -145,8 +145,8 @@ export default function PlayerPage({ params }: PageProps) {
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="border-b border-border-subtle bg-bg-surface/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <Logo size="sm" />
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
+          <Logo size="sm" variant="full" className="flex-shrink-0" />
           <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
         </div>
       </header>
