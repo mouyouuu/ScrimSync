@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
+import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import {
   getCurrentWeekStart,
   formatWeekStart,
@@ -255,6 +256,7 @@ export default function AdminPage() {
         </div>
       </header>
 
+      <PullToRefresh onRefresh={loadData}>
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -523,6 +525,7 @@ export default function AdminPage() {
           </>
         )}
       </main>
+      </PullToRefresh>
 
       {/* Scrim create/edit modal */}
       <Modal

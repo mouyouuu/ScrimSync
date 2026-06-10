@@ -8,6 +8,7 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid'
 import { ScrimCard } from '@/components/scrims/ScrimCard'
 import { InstallPWAHint } from '@/components/pwa/InstallPWAHint'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
+import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -181,6 +182,7 @@ export default function PlayerPage({ params }: PageProps) {
         </div>
       </header>
 
+      <PullToRefresh onRefresh={loadWeekData}>
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Greeting */}
         <div className="animate-fade-in">
@@ -322,6 +324,7 @@ export default function PlayerPage({ params }: PageProps) {
         {/* PWA hint */}
         <InstallPWAHint />
       </main>
+      </PullToRefresh>
     </div>
   )
 }

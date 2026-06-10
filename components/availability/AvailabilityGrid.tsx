@@ -50,6 +50,7 @@ export function AvailabilityGrid({
         selecting: !selectedRef.current.has(key),
         visited: new Set([key]),
       }
+      navigator.vibrate?.(8)
       onToggle(key)
     }
 
@@ -61,6 +62,7 @@ export function AvailabilityGrid({
       if (!key || drag.current.visited.has(key)) return
 
       drag.current.visited.add(key)
+      navigator.vibrate?.(6)
       const isSelected = selectedRef.current.has(key)
       if (drag.current.selecting && !isSelected) onToggle(key)
       if (!drag.current.selecting && isSelected) onToggle(key)
