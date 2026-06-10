@@ -286,16 +286,6 @@ export default function AdminPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
-            {!loading && players.length > 0 && (() => {
-              const responded = submissions.length + absences.filter(id => !submissions.some(s => s.player_id === id)).length
-              const all = responded >= players.length
-              return (
-                <div className={`flex items-center gap-0.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${all ? 'bg-success/10 border-success/30 text-success' : 'bg-bg-elevated border-border-subtle text-text-secondary'}`}>
-                  <span>{responded}</span>
-                  <span className="text-text-muted font-normal">/{players.length}</span>
-                </div>
-              )
-            })()}
             <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
             <button
               onClick={handleLogout}
