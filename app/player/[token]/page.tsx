@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from 'react'
 import { Logo } from '@/components/Logo'
 import { WeekSelector } from '@/components/availability/WeekSelector'
+
 import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid'
 import { ScrimCard } from '@/components/scrims/ScrimCard'
 import { InstallPWAHint } from '@/components/pwa/InstallPWAHint'
@@ -154,14 +155,20 @@ export default function PlayerPage({ params }: PageProps) {
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="border-b border-border-subtle bg-bg-surface/80 backdrop-blur-sm sticky top-0 z-10 pt-safe">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
-          <a href="/player" className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors flex-shrink-0">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="hidden sm:inline">Changer</span>
-          </a>
-          <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <Logo size="sm" />
+          <div className="flex items-center gap-3">
+            <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
+            <a
+              href="/player"
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-danger transition-colors px-2 py-1.5 rounded-lg hover:bg-danger/10"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5M9.5 9.5L13 7m0 0L9.5 4.5M13 7H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="hidden sm:inline">Changer</span>
+            </a>
+          </div>
         </div>
       </header>
 
