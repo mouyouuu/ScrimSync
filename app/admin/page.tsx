@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PushNotifications } from '@/components/pwa/PushNotifications'
 import {
   getCurrentWeekStart,
   formatWeekStart,
@@ -42,6 +43,9 @@ export default function AdminPage() {
   }>({ open: false })
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [notifForm, setNotifForm] = useState({ title: '', body: '' })
+  const [notifSending, setNotifSending] = useState(false)
+  const [notifSent, setNotifSent] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -155,6 +159,20 @@ export default function AdminPage() {
     setTimeout(() => setRelanceCopied(false), 2000)
   }
 
+  async function handleSendNotif() {
+    if (!notifForm.title.trim()) return
+    setNotifSending(true)
+    await fetch('/api/push/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: notifForm.title, body: notifForm.body, url: '/' }),
+    })
+    setNotifSending(false)
+    setNotifSent(true)
+    setNotifForm({ title: '', body: '' })
+    setTimeout(() => setNotifSent(false), 3000)
+  }
+
   async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string) {
     await fetch(`/api/scrims/${scrimId}`, {
       method: 'PUT',
@@ -192,6 +210,41 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
+            {/* Push notifications */}
+            <PushNotifications />
+
+            {/* Envoyer une notification personnalisée */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Envoyer une notification</CardTitle>
+              </CardHeader>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Titre (ex: Scrim annulé)"
+                  value={notifForm.title}
+                  onChange={e => setNotifForm(f => ({ ...f, title: e.target.value }))}
+                  className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                />
+                <input
+                  type="text"
+                  placeholder="Message (optionnel)"
+                  value={notifForm.body}
+                  onChange={e => setNotifForm(f => ({ ...f, body: e.target.value }))}
+                  className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSendNotif}
+                  loading={notifSending}
+                  disabled={!notifForm.title.trim() || notifSending}
+                  variant={notifSent ? 'success' : 'primary'}
+                >
+                  {notifSent ? '✓ Envoyé !' : 'Envoyer à tous'}
+                </Button>
+              </div>
+            </Card>
+
             {/* Créneaux parfaits */}
             <Card>
               <CardHeader>

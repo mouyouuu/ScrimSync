@@ -186,6 +186,9 @@ export default function PlayerPage({ params }: PageProps) {
           </p>
         </div>
 
+        {/* Push notifications */}
+        <PushNotifications playerId={player.id} />
+
         {/* Availability card */}
         <Card>
           <CardHeader>
@@ -258,9 +261,6 @@ export default function PlayerPage({ params }: PageProps) {
             </div>
           )}
         </Card>
-
-        {/* Push notifications */}
-        <PushNotifications playerId={player.id} />
 
         {/* PWA hint */}
         <InstallPWAHint />
