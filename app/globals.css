@@ -15,12 +15,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+    background-color: #09090b;
   }
 
   body {
     background-color: #09090b;
     color: #fafafa;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overscroll-behavior-y: none;
   }
 
   /* Scrollbar styling */
