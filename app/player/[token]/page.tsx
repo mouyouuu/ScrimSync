@@ -52,6 +52,7 @@ export default function PlayerPage({ params }: PageProps) {
           setNotFound(true)
         } else {
           setPlayer(data)
+          localStorage.setItem('player_token', token)
         }
       })
       .catch(() => setNotFound(true))
@@ -162,6 +163,7 @@ export default function PlayerPage({ params }: PageProps) {
             <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
             <a
               href="/player"
+              onClick={() => localStorage.removeItem('player_token')}
               className="flex items-center gap-1.5 text-xs text-text-muted hover:text-danger transition-colors px-2 py-1.5 rounded-lg hover:bg-danger/10"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

@@ -16,6 +16,8 @@ export default function PlayerSelectPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const saved = localStorage.getItem('player_token')
+    if (saved) { router.replace(`/player/${saved}`); return }
     fetch('/api/players')
       .then(r => r.json())
       .then(data => { setPlayers(data); setLoading(false) })
@@ -52,7 +54,7 @@ export default function PlayerSelectPage() {
             {players.map(player => (
               <button
                 key={player.token}
-                onClick={() => router.push(`/player/${player.token}`)}
+                onClick={() => { localStorage.setItem('player_token', player.token); router.push(`/player/${player.token}`) }}
                 className="flex items-center justify-between w-full px-4 h-12 rounded-xl border border-border-subtle bg-bg-surface hover:bg-bg-elevated hover:border-border active:scale-[0.98] transition-all duration-150 text-left"
               >
                 <span className="font-medium text-text-primary">{player.name}</span>
