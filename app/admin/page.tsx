@@ -151,9 +151,12 @@ export default function AdminPage() {
             <WeekSelector weekStart={weekStart} onChange={setWeekStart} />
             <button
               onClick={handleLogout}
-              className="text-xs text-text-muted hover:text-text-primary transition-colors hidden sm:block"
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-danger transition-colors px-2 py-1.5 rounded-lg hover:bg-danger/10"
             >
-              Déconnexion
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5M9.5 9.5L13 7m0 0L9.5 4.5M13 7H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="hidden sm:inline">Déconnexion</span>
             </button>
           </div>
         </div>
