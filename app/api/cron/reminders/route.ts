@@ -55,7 +55,24 @@ export async function GET(request: NextRequest) {
 
   if (!subs?.length) return NextResponse.json({ sent: 0 })
 
+  const isTest = request.nextUrl.searchParams.get('test') === 'true'
   let sent = 0
+
+  if (isTest) {
+    // Mode test : envoie une notif immédiatement sans vérifier l'heure
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.stringify({ title: '🔔 Test cron', body: 'Les rappels automatiques fonctionnent !', url: '/' })
+        )
+        sent++
+      } catch {
+        // Subscription expirée ou invalide
+      }
+    }
+    return NextResponse.json({ sent, test: true })
+  }
 
   for (const scrim of scrims) {
     const scrimDate = getScrimUTCDate(scrim.week_start, scrim.day_of_week, scrim.start_hour)
