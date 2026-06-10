@@ -94,6 +94,15 @@ export default function PlayerPage({ params }: PageProps) {
     if (saveStatus !== 'idle') setSaveStatus('idle')
   }
 
+  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string) {
+    await fetch(`/api/scrims/${scrimId}/result`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ result, score }),
+    })
+    await loadWeekData()
+  }
+
   async function handleSave() {
     if (!player) return
     setSaveStatus('saving')
@@ -233,6 +242,7 @@ export default function PlayerPage({ params }: PageProps) {
                   key={scrim.id}
                   scrim={scrim}
                   weekStart={weekStart}
+                  onResultChange={(result, score) => handleResultChange(scrim.id, result as 'win' | 'loss', score)}
                 />
               ))}
             </div>

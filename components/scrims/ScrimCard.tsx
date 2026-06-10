@@ -57,8 +57,8 @@ export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, 
             <p className="mt-1 text-sm text-text-secondary line-clamp-2">{scrim.notes}</p>
           )}
 
-          {/* Boutons résultat (admin, après le scrim) */}
-          {isAdmin && onResultChange && !scrim.result && status !== 'cancelled' && (
+          {/* Boutons résultat */}
+          {onResultChange && !scrim.result && status !== 'cancelled' && (
             <div className="flex items-center gap-2 mt-3">
               <span className="text-xs text-text-muted">Résultat :</span>
               <button
