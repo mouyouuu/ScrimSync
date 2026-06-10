@@ -67,7 +67,6 @@ export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onS
         value={form.opponent_name}
         onChange={e => set('opponent_name', e.target.value)}
         error={errors.opponent_name}
-        autoFocus
       />
 
       <Input
