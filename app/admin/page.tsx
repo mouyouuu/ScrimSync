@@ -309,17 +309,17 @@ export default function AdminPage() {
                   {perfectSlots.map(slot => (
                     <div
                       key={`${slot.day_of_week}-${slot.start_hour}`}
-                      className="flex items-center justify-between rounded-lg border border-success/20 bg-success/5 px-4 py-3"
+                      className="flex items-center justify-between gap-4 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
                         <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" />
-                        <span className="text-sm font-medium text-text-primary">
+                        <span className="text-sm font-medium text-text-primary truncate">
                           {formatLongDayWithDate(weekStart, slot.day_of_week)} · {formatHour(slot.start_hour)}
                         </span>
-                        <Badge variant="success">{APP_CONFIG.expectedPlayers}/{APP_CONFIG.expectedPlayers}</Badge>
+                        <Badge variant="success" className="flex-shrink-0">{APP_CONFIG.expectedPlayers}/{APP_CONFIG.expectedPlayers}</Badge>
                       </div>
                       <Button
-                        size="sm"
+                        size="md"
                         className="flex-shrink-0"
                         onClick={() =>
                           setScrimModal({
@@ -329,7 +329,7 @@ export default function AdminPage() {
                           })
                         }
                       >
-                        + Scrim
+                        Créer un scrim
                       </Button>
                     </div>
                   ))}
