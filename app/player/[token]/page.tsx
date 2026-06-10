@@ -7,6 +7,7 @@ import { WeekSelector } from '@/components/availability/WeekSelector'
 import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid'
 import { ScrimCard } from '@/components/scrims/ScrimCard'
 import { InstallPWAHint } from '@/components/pwa/InstallPWAHint'
+import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -255,6 +256,9 @@ export default function PlayerPage({ params }: PageProps) {
             </div>
           )}
         </Card>
+
+        {/* Push notifications */}
+        <PushNotifications playerId={player.id} />
 
         {/* PWA hint */}
         <InstallPWAHint />
