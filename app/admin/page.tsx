@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
+import { BottomNav } from '@/components/ui/BottomNav'
+import { SkeletonAdminContent, SkeletonStats } from '@/components/ui/Skeleton'
 import {
   getCurrentWeekStart,
   formatWeekStart,
@@ -25,7 +27,54 @@ import { buildAvailabilityMatrix, getPerfectSlots } from '@/lib/availability'
 import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData } from '@/types'
 import { APP_CONFIG } from '@/config/app'
 import { useRouter } from 'next/navigation'
-import { SkeletonAdminContent, SkeletonStats } from '@/components/ui/Skeleton'
+
+type AdminTab = 'scrims' | 'equipe' | 'stats' | 'reglages'
+
+const TABS = [
+  {
+    key: 'scrims',
+    label: 'Scrims',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M3 8h14" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 2v3M13 2v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M7 11.5h1.5M11 11.5h1.5M7 14.5h1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'equipe',
+    label: 'Équipe',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M2 17c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="15" cy="7" r="2" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M18 17c0-2.209-1.343-3.5-3-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'stats',
+    label: 'Stats',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 17V11M7 17V7M11 17V9M15 17V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'reglages',
+    label: 'Réglages',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M10 3.5V5M10 15v1.5M3.5 10H5M15 10h1.5M5.4 5.4l1.07 1.07M13.54 13.54l1.07 1.07M14.6 5.4l-1.07 1.07M6.46 13.54l-1.07 1.07" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+]
 
 export default function AdminPage() {
   const router = useRouter()
@@ -35,8 +84,8 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<AvailabilitySubmission[]>([])
   const [scrims, setScrims] = useState<Scrim[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<AdminTab>('scrims')
 
-  // Modal state
   const [scrimModal, setScrimModal] = useState<{
     open: boolean
     day?: number
@@ -53,6 +102,8 @@ export default function AdminPage() {
   const [playerSaving, setPlayerSaving] = useState<string | null>(null)
   const [availHours, setAvailHours] = useState<number[]>([19, 20, 21, 22, 23])
   const [hoursSaving, setHoursSaving] = useState(false)
+  const [relanceSending, setRelanceSending] = useState(false)
+  const [relanceSent, setRelanceSent] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -111,10 +162,7 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
-    if (res.ok) {
-      setScrimModal({ open: false })
-      await loadData()
-    }
+    if (res.ok) { setScrimModal({ open: false }); await loadData() }
   }
 
   async function handleUpdateScrim(id: string, data: ScrimFormData) {
@@ -123,10 +171,7 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
-    if (res.ok) {
-      setScrimModal({ open: false })
-      await loadData()
-    }
+    if (res.ok) { setScrimModal({ open: false }); await loadData() }
   }
 
   async function handleDeleteScrim(id: string) {
@@ -147,7 +192,6 @@ export default function AdminPage() {
       setTimeout(() => setCopied(false), 2000)
       return
     }
-
     const lines = ['📅 **Scrims de la semaine**\n']
     scrims.forEach(scrim => {
       const statusEmoji = scrim.status === 'cancelled' ? '❌' : scrim.status === 'pending' ? '⏳' : '✅'
@@ -156,14 +200,10 @@ export default function AdminPage() {
       if (scrim.notes) lines.push(`Note : ${scrim.notes}`)
       lines.push('')
     })
-
     navigator.clipboard.writeText(lines.join('\n'))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-
-  const [relanceSending, setRelanceSending] = useState(false)
-  const [relanceSent, setRelanceSent] = useState(false)
 
   async function handleRelanceAbsents() {
     const missing = players.filter(p => !submissions.some(s => s.player_id === p.id))
@@ -238,7 +278,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Header */}
       <header className="border-b border-border-subtle bg-bg-surface/80 backdrop-blur-sm sticky top-0 z-10 pt-safe">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Logo size="sm" />
@@ -258,273 +297,262 @@ export default function AdminPage() {
       </header>
 
       <PullToRefresh onRefresh={loadData}>
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {loading ? (
-          <SkeletonAdminContent />
-        ) : (
-          <>
-            {/* Push notifications */}
-            <PushNotifications />
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
+          {loading ? (
+            <SkeletonAdminContent />
+          ) : (
+            <div key={activeTab} className="animate-fade-in space-y-6">
 
-            {/* Envoyer une notification personnalisée */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Envoyer une notification</CardTitle>
-              </CardHeader>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Titre (ex: Scrim annulé)"
-                  value={notifForm.title}
-                  onChange={e => setNotifForm(f => ({ ...f, title: e.target.value }))}
-                  className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
-                />
-                <input
-                  type="text"
-                  placeholder="Message (optionnel)"
-                  value={notifForm.body}
-                  onChange={e => setNotifForm(f => ({ ...f, body: e.target.value }))}
-                  className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSendNotif}
-                  loading={notifSending}
-                  disabled={!notifForm.title.trim() || notifSending}
-                  variant={notifSent ? 'success' : 'primary'}
-                >
-                  {notifSent ? '✓ Envoyé !' : 'Envoyer à tous'}
-                </Button>
-              </div>
-            </Card>
+              {/* ── SCRIMS ── */}
+              {activeTab === 'scrims' && <>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Créneaux parfaits</CardTitle>
+                      <Badge variant={perfectSlots.length > 0 ? 'success' : 'muted'}>
+                        {perfectSlots.length} créneau{perfectSlots.length !== 1 ? 'x' : ''}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  {perfectSlots.length === 0 ? (
+                    <EmptyState
+                      title="Aucun créneau avec 5/5 joueurs disponibles"
+                      description="Attendez que tous les joueurs renseignent leurs disponibilités."
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      {perfectSlots.map(slot => (
+                        <div
+                          key={`${slot.day_of_week}-${slot.start_hour}`}
+                          className="flex items-center gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" />
+                          <p className="flex-1 min-w-0 text-sm font-medium text-text-primary truncate">
+                            {formatLongDayWithDate(weekStart, slot.day_of_week)} · {formatHour(slot.start_hour)}
+                          </p>
+                          <Badge variant="success" className="flex-shrink-0">{APP_CONFIG.expectedPlayers}/{APP_CONFIG.expectedPlayers}</Badge>
+                          <Button
+                            size="sm"
+                            className="flex-shrink-0 whitespace-nowrap"
+                            onClick={() => setScrimModal({ open: true, day: slot.day_of_week, hour: slot.start_hour })}
+                          >
+                            Créer un scrim
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
 
-            {/* Créneaux parfaits */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Créneaux parfaits</CardTitle>
-                  <Badge variant={perfectSlots.length > 0 ? 'success' : 'muted'}>
-                    {perfectSlots.length} créneau{perfectSlots.length !== 1 ? 'x' : ''}
-                  </Badge>
-                </div>
-              </CardHeader>
-              {perfectSlots.length === 0 ? (
-                <EmptyState
-                  title="Aucun créneau avec 5/5 joueurs disponibles"
-                  description="Attendez que tous les joueurs renseignent leurs disponibilités."
-                />
-              ) : (
-                <div className="space-y-2">
-                  {perfectSlots.map(slot => (
-                    <div
-                      key={`${slot.day_of_week}-${slot.start_hour}`}
-                      className="flex items-center gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
-                    >
-                      <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" />
-                      <p className="flex-1 min-w-0 text-sm font-medium text-text-primary truncate">
-                        {formatLongDayWithDate(weekStart, slot.day_of_week)} · {formatHour(slot.start_hour)}
-                      </p>
-                      <Badge variant="success" className="flex-shrink-0">{APP_CONFIG.expectedPlayers}/{APP_CONFIG.expectedPlayers}</Badge>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <CardTitle>Scrims confirmés</CardTitle>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant={copied ? 'success' : 'secondary'} onClick={copyDiscordMessage}>
+                          <span className="hidden sm:inline">{copied ? 'Copié !' : 'Copier message Discord'}</span>
+                          <span className="sm:hidden">{copied ? 'Copié !' : 'Discord'}</span>
+                        </Button>
+                        <Button size="sm" onClick={() => setScrimModal({ open: true })}>
+                          <span className="hidden sm:inline">+ Nouveau scrim</span>
+                          <span className="sm:hidden">+ Scrim</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  {scrims.length === 0 ? (
+                    <EmptyState
+                      title="Aucun scrim confirmé cette semaine"
+                      description="Créez un scrim depuis un créneau parfait ou manuellement."
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {scrims.map(scrim => (
+                        <ScrimCard
+                          key={scrim.id}
+                          scrim={scrim}
+                          weekStart={weekStart}
+                          isAdmin
+                          onEdit={() => setScrimModal({ open: true, scrim })}
+                          onDelete={() => setDeleteConfirm(scrim.id)}
+                          onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </>}
+
+              {/* ── ÉQUIPE ── */}
+              {activeTab === 'equipe' && <>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <CardTitle>Réponses</CardTitle>
                       <Button
                         size="sm"
-                        className="flex-shrink-0 whitespace-nowrap"
-                        onClick={() =>
-                          setScrimModal({
-                            open: true,
-                            day: slot.day_of_week,
-                            hour: slot.start_hour,
-                          })
-                        }
+                        variant={relanceSent ? 'success' : 'secondary'}
+                        loading={relanceSending}
+                        disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
+                        onClick={handleRelanceAbsents}
                       >
-                        Créer un scrim
+                        {relanceSent ? 'Envoyé !' : 'Relance'}
                       </Button>
                     </div>
-                  ))}
-                </div>
+                  </CardHeader>
+                  <PlayerStatusList players={players} submissions={submissions} />
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <CardTitle>Disponibilités</CardTitle>
+                      <div className="flex items-center gap-3 text-xs text-text-muted">
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded bg-success/30 border border-success/40" />
+                          5/5
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded bg-warning/20 border border-warning/30" />
+                          4/5
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded bg-bg-elevated border border-border-subtle" />
+                          &lt; 4
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <AdminAvailabilityMatrix
+                    matrix={matrix}
+                    weekStart={weekStart}
+                    onCreateScrim={(day, hour) => setScrimModal({ open: true, day, hour })}
+                  />
+                </Card>
+              </>}
+
+              {/* ── STATS ── */}
+              {activeTab === 'stats' && (
+                <Card>
+                  <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
+                  {!stats ? (
+                    <SkeletonStats />
+                  ) : stats.total === 0 ? (
+                    <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
+                  ) : (
+                    <div className="flex items-center gap-6 flex-wrap">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-success">{stats.wins}</p>
+                        <p className="text-xs text-text-muted mt-0.5">Victoires</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-danger">{stats.losses}</p>
+                        <p className="text-xs text-text-muted mt-0.5">Défaites</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+                        <p className="text-xs text-text-muted mt-0.5">Total</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-accent">
+                          {Math.round((stats.wins / stats.total) * 100)}%
+                        </p>
+                        <p className="text-xs text-text-muted mt-0.5">Win rate</p>
+                      </div>
+                    </div>
+                  )}
+                </Card>
               )}
-            </Card>
 
-            {/* Scrims confirmés */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <CardTitle>Scrims confirmés</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={copied ? 'success' : 'secondary'}
-                      onClick={copyDiscordMessage}
-                    >
-                      <span className="hidden sm:inline">{copied ? 'Copié !' : 'Copier message Discord'}</span>
-                      <span className="sm:hidden">{copied ? 'Copié !' : 'Discord'}</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setScrimModal({ open: true })}
-                    >
-                      <span className="hidden sm:inline">+ Nouveau scrim</span>
-                      <span className="sm:hidden">+ Scrim</span>
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              {scrims.length === 0 ? (
-                <EmptyState
-                  title="Aucun scrim confirmé cette semaine"
-                  description="Créez un scrim depuis un créneau parfait ou manuellement."
-                />
-              ) : (
-                <div className="space-y-3">
-                  {scrims.map(scrim => (
-                    <ScrimCard
-                      key={scrim.id}
-                      scrim={scrim}
-                      weekStart={weekStart}
-                      isAdmin
-                      onEdit={() => setScrimModal({ open: true, scrim })}
-                      onDelete={() => setDeleteConfirm(scrim.id)}
-                      onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
-                    />
-                  ))}
-                </div>
-              )}
-            </Card>
+              {/* ── RÉGLAGES ── */}
+              {activeTab === 'reglages' && <>
+                <PushNotifications />
 
-            {/* Réponses joueurs */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <CardTitle>Réponses</CardTitle>
-                  <Button
-                    size="sm"
-                    variant={relanceSent ? 'success' : 'secondary'}
-                    loading={relanceSending}
-                    disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
-                    onClick={handleRelanceAbsents}
-                  >
-                    {relanceSent ? 'Envoyé !' : 'Relance'}
-                  </Button>
-                </div>
-              </CardHeader>
-              <PlayerStatusList players={players} submissions={submissions} />
-            </Card>
-
-            {/* Stats W/L */}
-            <Card>
-              <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
-              {!stats ? (
-                <SkeletonStats />
-              ) : stats.total === 0 ? (
-                <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
-              ) : (
-                <div className="flex items-center gap-6 flex-wrap">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-success">{stats.wins}</p>
-                    <p className="text-xs text-text-muted mt-0.5">Victoires</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-danger">{stats.losses}</p>
-                    <p className="text-xs text-text-muted mt-0.5">Défaites</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
-                    <p className="text-xs text-text-muted mt-0.5">Total</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-accent">
-                      {Math.round((stats.wins / stats.total) * 100)}%
-                    </p>
-                    <p className="text-xs text-text-muted mt-0.5">Win rate</p>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {/* Gestion des joueurs */}
-            <Card>
-              <CardHeader><CardTitle>Joueurs</CardTitle></CardHeader>
-              <div className="space-y-2">
-                {players.map(player => (
-                  <div key={player.id} className="flex items-center gap-2">
+                <Card>
+                  <CardHeader><CardTitle>Envoyer une notification</CardTitle></CardHeader>
+                  <div className="space-y-3">
                     <input
                       type="text"
-                      value={playerEdits[player.id] ?? player.name}
-                      onChange={e => setPlayerEdits(prev => ({ ...prev, [player.id]: e.target.value }))}
-                      className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
+                      placeholder="Titre (ex: Scrim annulé)"
+                      value={notifForm.title}
+                      onChange={e => setNotifForm(f => ({ ...f, title: e.target.value }))}
+                      className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Message (optionnel)"
+                      value={notifForm.body}
+                      onChange={e => setNotifForm(f => ({ ...f, body: e.target.value }))}
+                      className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
                     />
                     <Button
                       size="sm"
-                      variant="secondary"
-                      loading={playerSaving === player.id}
-                      disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
-                      onClick={() => handleSavePlayerName(player.id)}
+                      onClick={handleSendNotif}
+                      loading={notifSending}
+                      disabled={!notifForm.title.trim() || notifSending}
+                      variant={notifSent ? 'success' : 'primary'}
                     >
-                      Sauvegarder
+                      {notifSent ? '✓ Envoyé !' : 'Envoyer à tous'}
                     </Button>
                   </div>
-                ))}
-              </div>
-            </Card>
+                </Card>
 
-            {/* Heures disponibles */}
-            <Card>
-              <CardHeader><CardTitle>Heures disponibles</CardTitle></CardHeader>
-              <div className="flex items-center gap-2 flex-wrap mb-4">
-                {[17, 18, 19, 20, 21, 22, 23].map(h => (
-                  <button
-                    key={h}
-                    onClick={() => handleToggleHour(h)}
-                    className={[
-                      'px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
-                      availHours.includes(h)
-                        ? 'bg-accent/15 border-accent/40 text-accent'
-                        : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border',
-                    ].join(' ')}
-                  >
-                    {h}h
-                  </button>
-                ))}
-              </div>
-              <Button size="sm" loading={hoursSaving} onClick={handleSaveHours}>
-                {hoursSaving ? 'Sauvegarde...' : 'Sauvegarder'}
-              </Button>
-            </Card>
-
-            {/* Matrice complète */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-4 flex-wrap">
-                  <CardTitle>Disponibilités</CardTitle>
-                  <div className="flex items-center gap-3 text-xs text-text-muted">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded bg-success/30 border border-success/40" />
-                      5/5
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded bg-warning/20 border border-warning/30" />
-                      4/5
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded bg-bg-elevated border border-border-subtle" />
-                      &lt; 4
-                    </span>
+                <Card>
+                  <CardHeader><CardTitle>Joueurs</CardTitle></CardHeader>
+                  <div className="space-y-2">
+                    {players.map(player => (
+                      <div key={player.id} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={playerEdits[player.id] ?? player.name}
+                          onChange={e => setPlayerEdits(prev => ({ ...prev, [player.id]: e.target.value }))}
+                          className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
+                        />
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          loading={playerSaving === player.id}
+                          disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
+                          onClick={() => handleSavePlayerName(player.id)}
+                        >
+                          Sauvegarder
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </CardHeader>
-              <AdminAvailabilityMatrix
-                matrix={matrix}
-                weekStart={weekStart}
-                onCreateScrim={(day, hour) =>
-                  setScrimModal({ open: true, day, hour })
-                }
-              />
-            </Card>
-          </>
-        )}
-      </main>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle>Heures disponibles</CardTitle></CardHeader>
+                  <div className="flex items-center gap-2 flex-wrap mb-4">
+                    {[17, 18, 19, 20, 21, 22, 23].map(h => (
+                      <button
+                        key={h}
+                        onClick={() => handleToggleHour(h)}
+                        className={[
+                          'px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
+                          availHours.includes(h)
+                            ? 'bg-accent/15 border-accent/40 text-accent'
+                            : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border',
+                        ].join(' ')}
+                      >
+                        {h}h
+                      </button>
+                    ))}
+                  </div>
+                  <Button size="sm" loading={hoursSaving} onClick={handleSaveHours}>
+                    {hoursSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </Button>
+                </Card>
+              </>}
+
+            </div>
+          )}
+        </main>
       </PullToRefresh>
 
-      {/* Scrim create/edit modal */}
+      <BottomNav tabs={TABS} active={activeTab} onChange={key => setActiveTab(key as AdminTab)} />
+
       <Modal
         open={scrimModal.open}
         onClose={() => setScrimModal({ open: false })}
@@ -546,7 +574,6 @@ export default function AdminPage() {
         />
       </Modal>
 
-      {/* Delete confirm modal */}
       <Modal
         open={deleteConfirm !== null}
         onClose={() => setDeleteConfirm(null)}
