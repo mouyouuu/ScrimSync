@@ -217,11 +217,11 @@ export default function AdminPage() {
     setTimeout(() => setNotifSent(false), 3000)
   }
 
-  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string) {
-    await fetch(`/api/scrims/${scrimId}`, {
-      method: 'PUT',
+  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string, notes: string) {
+    await fetch(`/api/scrims/${scrimId}/result`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...scrims.find(s => s.id === scrimId), result, score }),
+      body: JSON.stringify({ result, score, notes }),
     })
     await loadData()
   }
@@ -375,7 +375,7 @@ export default function AdminPage() {
                       isAdmin
                       onEdit={() => setScrimModal({ open: true, scrim })}
                       onDelete={() => setDeleteConfirm(scrim.id)}
-                      onResultChange={(result, score) => handleResultChange(scrim.id, result as 'win' | 'loss', score)}
+                      onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
                     />
                   ))}
                 </div>

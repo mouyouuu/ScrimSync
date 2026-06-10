@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase-server'
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const body = await request.json()
-  const { result, score } = body
+  const { result, score, notes } = body
 
   if (result !== 'win' && result !== 'loss') {
     return NextResponse.json({ error: 'result must be win or loss' }, { status: 400 })
@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const supabase = createServerClient()
   const { data, error } = await supabase
     .from('scrims')
-    .update({ result, score: score?.trim() || null })
+    .update({ result, score: score?.trim() || null, notes: notes?.trim() || null })
     .eq('id', id)
     .select()
     .single()

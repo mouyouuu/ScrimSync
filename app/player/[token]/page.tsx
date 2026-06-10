@@ -36,6 +36,7 @@ export default function PlayerPage({ params }: PageProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [loadingData, setLoadingData] = useState(true)
+  const [stats, setStats] = useState<{ wins: number; losses: number; total: number; scrims: Scrim[] } | null>(null)
 
   const ws = formatWeekStart(weekStart)
 
@@ -97,14 +98,19 @@ export default function PlayerPage({ params }: PageProps) {
     if (saveStatus !== 'idle') setSaveStatus('idle')
   }
 
-  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string) {
+  async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string, notes: string) {
     await fetch(`/api/scrims/${scrimId}/result`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ result, score }),
+      body: JSON.stringify({ result, score, notes }),
     })
     await loadWeekData()
+    fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
   }
+
+  useEffect(() => {
+    fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
+  }, [])
 
   async function handleSave() {
     if (!player) return
@@ -255,12 +261,56 @@ export default function PlayerPage({ params }: PageProps) {
                   key={scrim.id}
                   scrim={scrim}
                   weekStart={weekStart}
-                  onResultChange={(result, score) => handleResultChange(scrim.id, result as 'win' | 'loss', score)}
+                  onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
                 />
               ))}
             </div>
           )}
         </Card>
+
+        {/* Stats W/L */}
+        {stats && stats.total > 0 && (
+          <Card>
+            <CardHeader><CardTitle>Statistiques de l'équipe</CardTitle></CardHeader>
+            <div className="flex items-center gap-6 flex-wrap mb-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">{stats.wins}</p>
+                <p className="text-xs text-text-muted mt-0.5">Victoires</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-danger">{stats.losses}</p>
+                <p className="text-xs text-text-muted mt-0.5">Défaites</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+                <p className="text-xs text-text-muted mt-0.5">Total</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-accent">
+                  {Math.round((stats.wins / stats.total) * 100)}%
+                </p>
+                <p className="text-xs text-text-muted mt-0.5">Win rate</p>
+              </div>
+            </div>
+            {/* Historique */}
+            <div className="space-y-2 border-t border-border-subtle pt-4 mt-2">
+              {stats.scrims.map((s) => (
+                <div key={s.id} className="flex items-center justify-between gap-2 text-sm">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`text-xs font-bold w-4 flex-shrink-0 ${s.result === 'win' ? 'text-success' : 'text-danger'}`}>
+                      {s.result === 'win' ? 'W' : 'L'}
+                    </span>
+                    <span className="text-text-primary truncate">vs {s.opponent_name}</span>
+                    {s.score && <span className="text-text-muted text-xs flex-shrink-0">{s.score}</span>}
+                  </div>
+                  <span className="text-xs text-text-muted flex-shrink-0">
+                    {new Date(s.week_start).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* PWA hint */}
         <InstallPWAHint />
