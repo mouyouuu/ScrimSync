@@ -554,31 +554,33 @@ export default function AdminPage() {
                   <CardHeader><CardTitle>Joueurs</CardTitle></CardHeader>
                   <div className="space-y-2">
                     {players.map(player => (
-                      <div key={player.id} className="flex items-center gap-2">
+                      <div key={player.id} className="flex items-center gap-2 py-1">
                         <input
                           type="text"
                           value={playerEdits[player.id] ?? player.name}
                           onChange={e => setPlayerEdits(prev => ({ ...prev, [player.id]: e.target.value }))}
-                          className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
+                          className="flex-1 min-w-0 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
                         />
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          loading={playerSaving === player.id}
-                          disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
-                          onClick={() => handleSavePlayerName(player.id)}
-                        >
-                          Sauvegarder
-                        </Button>
-                        <button
-                          onClick={() => setDeletePlayerConfirm(player.id)}
-                          className="flex-shrink-0 p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all"
-                          title="Supprimer"
-                        >
-                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                            <path d="M2 4h11M5 4V2.5A1.5 1.5 0 016.5 1h2A1.5 1.5 0 0110 2.5V4M6 7v4M9 7v4M3 4l.8 8.5A1 1 0 004.8 13.5h5.4a1 1 0 001-.995L12 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            loading={playerSaving === player.id}
+                            disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
+                            onClick={() => handleSavePlayerName(player.id)}
+                          >
+                            Sauvegarder
+                          </Button>
+                          <button
+                            onClick={() => setDeletePlayerConfirm(player.id)}
+                            className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all"
+                            title="Supprimer"
+                          >
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              <path d="M2 4h11M5 4V2.5A1.5 1.5 0 016.5 1h2A1.5 1.5 0 0110 2.5V4M6 7v4M9 7v4M3 4l.8 8.5A1 1 0 004.8 13.5h5.4a1 1 0 001-.995L12 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
