@@ -1,0 +1,57 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sGrad" x1="130" y1="110" x2="390" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#5b5bd6"/>
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="300" y1="310" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#0c0c1e"/>
+
+  <!-- Subtle border -->
+  <rect x="1.5" y="1.5" width="509" height="509" rx="111" fill="none" stroke="#1e1e35" stroke-width="3"/>
+
+  <!-- Calendar pegs top -->
+  <rect x="166" y="82" width="28" height="58" rx="10" fill="#17172b"/>
+  <rect x="318" y="82" width="28" height="58" rx="10" fill="#17172b"/>
+
+  <!-- Calendar cells row 1 -->
+  <rect x="146" y="166" width="60" height="60" rx="13" fill="#17172b"/>
+  <rect x="222" y="166" width="60" height="60" rx="13" fill="#17172b"/>
+  <rect x="298" y="166" width="60" height="60" rx="13" fill="#17172b"/>
+
+  <!-- Calendar cells row 2 -->
+  <rect x="146" y="244" width="60" height="60" rx="13" fill="#17172b"/>
+  <rect x="222" y="244" width="60" height="60" rx="13" fill="#17172b"/>
+
+  <!-- Calendar cells row 3 -->
+  <rect x="146" y="322" width="60" height="60" rx="13" fill="#17172b"/>
+
+  <!-- Checkmark -->
+  <path d="M304 352 L332 382 L396 308" stroke="url(#checkGrad)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- S-curve path — the main logo shape -->
+  <path
+    d="M 128 178
+       C 128 142, 152 114, 188 114
+       L 336 114
+       C 372 114, 392 138, 392 172
+       L 392 216
+       C 392 252, 370 272, 334 272
+       L 186 272
+       C 152 272, 128 294, 128 330
+       L 128 356
+       C 128 392, 152 416, 188 416
+       L 226 416"
+    stroke="url(#sGrad)"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>

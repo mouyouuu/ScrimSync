@@ -1,0 +1,66 @@
+<svg viewBox="0 0 720 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sGradL" x1="20" y1="20" x2="130" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#5b5bd6"/>
+    </linearGradient>
+    <linearGradient id="checkGradL" x1="85" y1="90" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon background -->
+  <rect x="0" y="0" width="160" height="160" rx="35" fill="#0c0c1e"/>
+  <rect x="0.5" y="0.5" width="159" height="159" rx="34.5" fill="none" stroke="#1e1e35" stroke-width="1.5"/>
+
+  <!-- Calendar pegs -->
+  <rect x="52" y="25" width="9" height="18" rx="3" fill="#17172b"/>
+  <rect x="99" y="25" width="9" height="18" rx="3" fill="#17172b"/>
+
+  <!-- Calendar cells row 1 -->
+  <rect x="46" y="52" width="19" height="19" rx="4" fill="#17172b"/>
+  <rect x="70" y="52" width="19" height="19" rx="4" fill="#17172b"/>
+  <rect x="94" y="52" width="19" height="19" rx="4" fill="#17172b"/>
+
+  <!-- Calendar cells row 2 -->
+  <rect x="46" y="76" width="19" height="19" rx="4" fill="#17172b"/>
+  <rect x="70" y="76" width="19" height="19" rx="4" fill="#17172b"/>
+
+  <!-- Calendar cells row 3 -->
+  <rect x="46" y="100" width="19" height="19" rx="4" fill="#17172b"/>
+
+  <!-- Checkmark -->
+  <path d="M94 110 L103 120 L122 97" stroke="url(#checkGradL)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- S-curve -->
+  <path
+    d="M 40 56
+       C 40 44, 47 36, 58 36
+       L 105 36
+       C 116 36, 122 43, 122 54
+       L 122 68
+       C 122 79, 115 85, 104 85
+       L 58 85
+       C 47 85, 40 92, 40 103
+       L 40 111
+       C 40 122, 47 130, 58 130
+       L 71 130"
+    stroke="url(#sGradL)"
+    stroke-width="10.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <!-- "ScrimSync" text -->
+  <text
+    x="188"
+    y="105"
+    font-family="'Inter', 'Geist Sans', system-ui, sans-serif"
+    font-size="62"
+    font-weight="600"
+    letter-spacing="-1.5"
+    fill="#fafafa"
+  >ScrimSync</text>
+</svg>
