@@ -114,11 +114,11 @@ export function ScrimForm({
         rows={3}
       />
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
           Annuler
         </Button>
-        <Button type="submit" loading={loading} className="flex-1">
+        <Button type="submit" loading={loading} className="flex-1 whitespace-nowrap">
           {initialData ? 'Enregistrer' : 'Confirmer le scrim'}
         </Button>
       </div>
