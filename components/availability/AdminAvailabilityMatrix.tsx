@@ -20,7 +20,7 @@ export function AdminAvailabilityMatrix({
 
   function getCellStyle(count: number): string {
     const base =
-      'h-10 w-full rounded-lg border transition-all duration-150 text-xs font-semibold tabular-nums cursor-default'
+      'h-9 w-full rounded-md border transition-all duration-150 text-[11px] font-semibold tabular-nums cursor-default'
     if (count === APP_CONFIG.expectedPlayers)
       return `${base} bg-success/15 border-success/30 text-success`
     if (count === APP_CONFIG.expectedPlayers - 1)
@@ -31,52 +31,55 @@ export function AdminAvailabilityMatrix({
   }
 
   return (
-    <div className="overflow-x-auto -mx-1 px-1">
-      <div className="min-w-[480px]">
-        {/* Header */}
-        <div className="grid mb-1" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
-          <div />
-          {APP_CONFIG.daysOfWeek.map(day => (
-            <div key={day} className="text-center text-xs font-medium text-text-muted py-2 px-1">
-              {formatShortDayWithDate(weekStart, day)}
+    <div className="w-full">
+      {/* Header */}
+      <div className="grid mb-1" style={{ gridTemplateColumns: '36px repeat(7, 1fr)', gap: '3px' }}>
+        <div />
+        {APP_CONFIG.daysOfWeek.map(day => {
+          const label = formatShortDayWithDate(weekStart, day)
+          const [dayName, dateNum] = label.split(' ')
+          return (
+            <div key={day} className="text-center py-1 px-0.5">
+              <div className="text-[10px] font-medium text-text-muted leading-tight">{dayName}</div>
+              <div className="text-[11px] font-semibold text-text-secondary leading-tight">{dateNum}</div>
             </div>
-          ))}
-        </div>
+          )
+        })}
+      </div>
 
-        {/* Rows */}
-        <div className="flex flex-col gap-1">
-          {APP_CONFIG.availableHours.map(hour => (
-            <div
-              key={hour}
-              className="grid items-center gap-1"
-              style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}
-            >
-              <div className="text-right pr-3 text-xs font-medium text-text-muted tabular-nums">
-                {formatHour(hour)}
-              </div>
-              {APP_CONFIG.daysOfWeek.map(day => {
-                const slot = matrix[day]?.[hour]
-                const count = slot?.count ?? 0
-                const isPerfect = count === APP_CONFIG.expectedPlayers
-
-                return (
-                  <div key={day} className="relative group">
-                    <button
-                      onClick={() => {
-                        setTooltip(tooltip?.day_of_week === day && tooltip?.start_hour === hour ? null : slot)
-                        if (isPerfect && onCreateScrim) onCreateScrim(day, hour)
-                      }}
-                      className={getCellStyle(count)}
-                      aria-label={`${formatShortDayWithDate(weekStart, day)} ${formatHour(hour)} — ${count}/${APP_CONFIG.expectedPlayers}`}
-                    >
-                      {count > 0 ? `${count}/${APP_CONFIG.expectedPlayers}` : '—'}
-                    </button>
-                  </div>
-                )
-              })}
+      {/* Rows */}
+      <div className="flex flex-col" style={{ gap: '3px' }}>
+        {APP_CONFIG.availableHours.map(hour => (
+          <div
+            key={hour}
+            className="grid items-center"
+            style={{ gridTemplateColumns: '36px repeat(7, 1fr)', gap: '3px' }}
+          >
+            <div className="text-right pr-2 text-[11px] font-medium text-text-muted tabular-nums">
+              {formatHour(hour)}
             </div>
-          ))}
-        </div>
+            {APP_CONFIG.daysOfWeek.map(day => {
+              const slot = matrix[day]?.[hour]
+              const count = slot?.count ?? 0
+              const isPerfect = count === APP_CONFIG.expectedPlayers
+
+              return (
+                <div key={day} className="relative group">
+                  <button
+                    onClick={() => {
+                      setTooltip(tooltip?.day_of_week === day && tooltip?.start_hour === hour ? null : slot)
+                      if (isPerfect && onCreateScrim) onCreateScrim(day, hour)
+                    }}
+                    className={getCellStyle(count)}
+                    aria-label={`${formatShortDayWithDate(weekStart, day)} ${formatHour(hour)} — ${count}/${APP_CONFIG.expectedPlayers}`}
+                  >
+                    {count > 0 ? `${count}/${APP_CONFIG.expectedPlayers}` : '—'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
 
       {/* Slot detail tooltip */}

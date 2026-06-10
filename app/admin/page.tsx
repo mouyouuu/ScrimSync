@@ -224,13 +224,15 @@ export default function AdminPage() {
                       variant={copied ? 'success' : 'secondary'}
                       onClick={copyDiscordMessage}
                     >
-                      {copied ? 'Copié !' : 'Copier message Discord'}
+                      <span className="hidden sm:inline">{copied ? 'Copié !' : 'Copier message Discord'}</span>
+                      <span className="sm:hidden">{copied ? 'Copié !' : 'Discord'}</span>
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => setScrimModal({ open: true })}
                     >
-                      + Nouveau scrim
+                      <span className="hidden sm:inline">+ Nouveau scrim</span>
+                      <span className="sm:hidden">+ Scrim</span>
                     </Button>
                   </div>
                 </div>
