@@ -340,7 +340,7 @@ export default function AdminPage() {
       </header>
 
       <PullToRefresh onRefresh={loadData}>
-        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-5">
           {loading ? (
             <SkeletonAdminContent />
           ) : (
@@ -359,7 +359,8 @@ export default function AdminPage() {
                   </CardHeader>
                   {perfectSlots.length === 0 ? (
                     <EmptyState
-                      title="Aucun créneau avec 5/5 joueurs disponibles"
+                      variant="team"
+                      title="Aucun créneau 5/5 pour l'instant"
                       description="Attendez que tous les joueurs renseignent leurs disponibilités."
                     />
                   ) : (
@@ -405,7 +406,8 @@ export default function AdminPage() {
                   </CardHeader>
                   {scrims.length === 0 ? (
                     <EmptyState
-                      title="Aucun scrim confirmé cette semaine"
+                      variant="scrims"
+                      title="Aucun scrim cette semaine"
                       description="Créez un scrim depuis un créneau parfait ou manuellement."
                     />
                   ) : (
@@ -491,26 +493,30 @@ export default function AdminPage() {
                   {!stats ? (
                     <SkeletonStats />
                   ) : stats.total === 0 ? (
-                    <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
+                    <EmptyState
+                      variant="stats"
+                      title="Pas encore de résultats"
+                      description="Les stats apparaîtront après votre premier scrim joué."
+                    />
                   ) : (
-                    <div className="flex items-center gap-6 flex-wrap">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-success">{stats.wins}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Victoires</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Victoires</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-danger">{stats.losses}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Défaites</p>
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Défaites</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Total</p>
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Matchs</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-accent">
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-accent tracking-tight leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
-                        <p className="text-xs text-text-muted mt-0.5">Win rate</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Win rate</p>
                       </div>
                     </div>
                   )}

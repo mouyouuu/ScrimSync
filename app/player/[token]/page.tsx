@@ -292,17 +292,19 @@ export default function PlayerPage({ params }: PageProps) {
       </header>
 
       <PullToRefresh onRefresh={loadWeekData}>
-        <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-5">
 
-          {/* Greeting (always visible) */}
-          <div className="animate-fade-in">
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-              Bonjour, {player.name}
-            </h1>
-            <p className="text-sm text-text-muted mt-0.5">
-              Semaine du {formatWeekLabel(weekStart)}
-            </p>
-          </div>
+          {/* Greeting — dispo tab only */}
+          {activeTab === 'dispo' && (
+            <div className="animate-fade-in pt-1">
+              <h1 className="text-[28px] font-bold tracking-tight text-text-primary leading-tight">
+                Bonjour, {player.name}
+              </h1>
+              <p className="text-[13px] text-text-muted mt-1 font-normal">
+                Semaine du {formatWeekLabel(weekStart)}
+              </p>
+            </div>
+          )}
 
           <div key={activeTab} className="animate-fade-in space-y-6">
 
@@ -346,7 +348,7 @@ export default function PlayerPage({ params }: PageProps) {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <CardTitle>Mes disponibilités</CardTitle>
-                        <p className="text-xs text-text-muted mt-1">
+                        <p className="text-[13px] text-text-muted mt-1 leading-relaxed">
                           Coche les heures auxquelles tu peux être prêt à lancer un scrim.
                         </p>
                       </div>
@@ -430,7 +432,8 @@ export default function PlayerPage({ params }: PageProps) {
                   </div>
                 ) : scrims.length === 0 ? (
                   <EmptyState
-                    title="Aucun scrim confirmé cette semaine"
+                    variant="scrims"
+                    title="Aucun scrim cette semaine"
                     description="L'admin confirmera les scrims une fois les disponibilités reçues."
                   />
                 ) : (
@@ -464,27 +467,31 @@ export default function PlayerPage({ params }: PageProps) {
                 {!stats ? (
                   <SkeletonStats />
                 ) : stats.total === 0 ? (
-                  <p className="text-sm text-text-muted py-2">Aucun résultat enregistré pour l'instant.</p>
+                  <EmptyState
+                    variant="stats"
+                    title="Pas encore de résultats"
+                    description="Les stats apparaîtront après votre premier scrim joué."
+                  />
                 ) : (
                   <>
-                    <div className="flex items-center gap-6 flex-wrap mb-4">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-success">{stats.wins}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Victoires</p>
+                    <div className="grid grid-cols-2 gap-3 mb-5">
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Victoires</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-danger">{stats.losses}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Défaites</p>
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Défaites</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
-                        <p className="text-xs text-text-muted mt-0.5">Total</p>
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Matchs</p>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-accent">
+                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
+                        <p className="text-[32px] font-bold text-accent tracking-tight leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
-                        <p className="text-xs text-text-muted mt-0.5">Win rate</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Win rate</p>
                       </div>
                     </div>
                     <div className="space-y-2 border-t border-border-subtle pt-4">

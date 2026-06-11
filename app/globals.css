@@ -21,6 +21,7 @@
 
   body {
     background-color: #09090b;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(108,92,231,0.08) 0%, transparent 60%);
     color: #fafafa;
     font-feature-settings: "rlig" 1, "calt" 1;
     overscroll-behavior-y: none;

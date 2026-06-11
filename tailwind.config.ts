@@ -29,12 +29,12 @@ const config: Config = {
           muted: '#71717a',
           disabled: '#52525b',
         },
-        // Accent (indigo premium)
+        // Accent
         accent: {
-          DEFAULT: '#6366f1',
-          hover: '#4f46e5',
-          muted: '#312e81',
-          subtle: '#1e1b4b',
+          DEFAULT: '#6C5CE7',
+          hover: '#5A4BD1',
+          muted: '#2d2562',
+          subtle: '#1a1540',
           foreground: '#ffffff',
         },
         // States
@@ -66,11 +66,12 @@ const config: Config = {
         'xl': '16px',
       },
       boxShadow: {
-        'sm': '0 1px 2px rgba(0,0,0,0.5)',
-        DEFAULT: '0 2px 8px rgba(0,0,0,0.4)',
-        'md': '0 4px 16px rgba(0,0,0,0.5)',
-        'lg': '0 8px 32px rgba(0,0,0,0.6)',
-        'accent': '0 0 0 1px rgba(99,102,241,0.4)',
+        'sm': '0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4)',
+        DEFAULT: '0 4px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)',
+        'md': '0 8px 24px rgba(0,0,0,0.6)',
+        'lg': '0 16px 48px rgba(0,0,0,0.7)',
+        'accent': '0 0 0 1px rgba(108,92,231,0.5), 0 4px 16px rgba(108,92,231,0.15)',
+        'card': '0 1px 3px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out',
