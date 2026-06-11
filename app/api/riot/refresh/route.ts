@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
   const supabase = createServerClient()
   const { data: players } = await supabase
     .from('players')
-    .select('id, riot_summoner_id, riot_lp_start')
-    .not('riot_summoner_id', 'is', null)
+    .select('id, riot_puuid, riot_lp_start')
+    .not('riot_puuid', 'is', null)
 
   if (!players?.length) return NextResponse.json({ updated: 0 })
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   for (const player of players) {
     try {
       const entries: Array<{ queueType: string; tier: string; rank: string; leaguePoints: number; wins: number; losses: number }> =
-        await riotFetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${player.riot_summoner_id}`)
+        await riotFetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${player.riot_puuid}`)
 
       const soloQ = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')
       if (!soloQ) continue
@@ -45,10 +45,9 @@ export async function POST(request: NextRequest) {
       }).eq('id', player.id)
 
       updated++
-      // Respecter les rate limits Riot (20 req/s)
       await new Promise(r => setTimeout(r, 100))
     } catch {
-      // Continuer si un joueur échoue
+      // continuer si un joueur échoue
     }
   }
 

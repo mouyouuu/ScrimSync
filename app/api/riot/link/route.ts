@@ -31,7 +31,7 @@ async function riotFetch(url: string) {
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-  if (!process.env.RIOT_API_KEY) return NextResponse.json({ error: 'RIOT_API_KEY manquant — configure la variable Vercel' }, { status: 500 })
+  if (!process.env.RIOT_API_KEY) return NextResponse.json({ error: 'RIOT_API_KEY non définie dans Vercel' }, { status: 500 })
 
   const body = await request.json().catch(() => ({}))
   const { player_id, game_name, tag_line } = body
@@ -39,23 +39,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Paramètres manquants' }, { status: 400 })
   }
 
-  const encodedName = encodeURIComponent(game_name)
-  const encodedTag  = encodeURIComponent(tag_line)
-
   try {
     // 1. PUUID via account-v1 (Europe)
     const account = await riotFetch(
-      `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodedName}/${encodedTag}`
+      `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(game_name)}/${encodeURIComponent(tag_line)}`
     )
 
-    // 2. Summoner ID via summoner-v4 (EUW1)
-    const summoner = await riotFetch(
-      `https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${account.puuid}`
-    )
-
-    // 3. Ranked data via league-v4 (EUW1)
+    // 2. Ranked data via league-v4 by PUUID (plus besoin de summoner-v4)
     const entries: Array<{ queueType: string; tier: string; rank: string; leaguePoints: number; wins: number; losses: number }> =
-      await riotFetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summoner.id}`)
+      await riotFetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${account.puuid}`)
 
     const soloQ = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')
     const lpStart = soloQ ? getTotalLP(soloQ.tier, soloQ.rank, soloQ.leaguePoints) : 0
@@ -67,7 +59,7 @@ export async function POST(request: NextRequest) {
         riot_game_name: game_name,
         riot_tag_line: tag_line,
         riot_puuid: account.puuid,
-        riot_summoner_id: summoner.id,
+        riot_summoner_id: null,
         riot_tier: soloQ?.tier ?? null,
         riot_rank: soloQ?.rank ?? null,
         riot_lp: soloQ?.leaguePoints ?? null,
