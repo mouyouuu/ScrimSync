@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         riot_tag_line: tag_line,
         riot_puuid: account.puuid,
         riot_summoner_id: null,
-        riot_tier: soloQ?.tier ?? null,
+        riot_tier: soloQ?.tier ?? 'UNRANKED',
         riot_rank: soloQ?.rank ?? null,
         riot_lp: soloQ?.leaguePoints ?? null,
         riot_wins: soloQ?.wins ?? null,

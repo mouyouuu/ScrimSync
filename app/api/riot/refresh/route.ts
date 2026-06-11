@@ -33,14 +33,13 @@ export async function POST(request: NextRequest) {
         await riotFetch(`https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${player.riot_puuid}`)
 
       const soloQ = entries.find(e => e.queueType === 'RANKED_SOLO_5x5')
-      if (!soloQ) continue
 
       await supabase.from('players').update({
-        riot_tier: soloQ.tier,
-        riot_rank: soloQ.rank,
-        riot_lp: soloQ.leaguePoints,
-        riot_wins: soloQ.wins,
-        riot_losses: soloQ.losses,
+        riot_tier: soloQ?.tier ?? 'UNRANKED',
+        riot_rank: soloQ?.rank ?? null,
+        riot_lp: soloQ?.leaguePoints ?? null,
+        riot_wins: soloQ?.wins ?? null,
+        riot_losses: soloQ?.losses ?? null,
         riot_updated_at: new Date().toISOString(),
       }).eq('id', player.id)
 
