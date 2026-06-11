@@ -27,7 +27,7 @@ export function getTotalLP(tier: string, rank: string | null | undefined, lp: nu
 
 function tierImageUrl(tier: string): string {
   const t = tier.toLowerCase()
-  return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-shared-components/global/default/images/ranked-emblems/emblem-${t}.png`
+  return `/ranks/${t}.png`
 }
 
 interface RankBadgeProps {
@@ -58,23 +58,14 @@ export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecor
   return (
     <div className="flex items-center gap-2">
       <div className="flex-shrink-0" style={{ width: imgSize, height: imgSize }}>
-        {isUnranked ? (
-          <div
-            className="w-full h-full rounded-lg flex items-center justify-center text-[9px] font-bold"
-            style={{ background: 'rgba(107,114,128,0.12)', color: '#6B7280', border: '1.5px solid rgba(107,114,128,0.2)' }}
-          >
-            U
-          </div>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={tierImageUrl(key)}
-            alt={meta.label}
-            width={imgSize}
-            height={imgSize}
-            style={{ objectFit: 'contain', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}
-          />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={tierImageUrl(key)}
+          alt={meta.label}
+          width={imgSize}
+          height={imgSize}
+          style={{ objectFit: 'contain', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}
+        />
       </div>
       <div className="min-w-0">
         <p className="text-xs font-semibold leading-tight truncate" style={{ color: meta.color }}>
