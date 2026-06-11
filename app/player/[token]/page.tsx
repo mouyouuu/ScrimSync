@@ -21,6 +21,7 @@ import {
 import { buildPlayerAvailabilitySet } from '@/lib/availability'
 import { Player, Availability, Scrim, SaveStatus } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
+import { RankBadge, getTotalLP } from '@/components/lol/RankBadge'
 
 function isScrimToday(scrim: Scrim, wStart: Date): boolean {
   const d = new Date(wStart)
@@ -305,6 +306,51 @@ export default function PlayerPage({ params }: PageProps) {
               </p>
             </div>
           )}
+
+          {/* Bloc ELO — toujours visible si compte lié */}
+          {player.riot_tier && (() => {
+            const isUnranked = player.riot_tier === 'UNRANKED'
+            const currentLP = isUnranked ? 0 : getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!)
+            const lpGained = player.riot_lp_start != null && !isUnranked ? currentLP - player.riot_lp_start : null
+            const wins = player.riot_wins ?? 0
+            const losses = player.riot_losses ?? 0
+            const winRate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : null
+            return (
+              <div className="animate-fade-in bg-bg-elevated rounded-2xl p-4 flex items-center gap-4">
+                <RankBadge
+                  tier={player.riot_tier!}
+                  rank={player.riot_rank}
+                  lp={player.riot_lp}
+                  size="lg"
+                />
+                <div className="h-10 w-px bg-border-subtle flex-shrink-0" />
+                <div className="flex gap-4 flex-1 min-w-0">
+                  <div className="text-center">
+                    <p className="text-[22px] font-bold text-success tracking-tight leading-none">{wins}</p>
+                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Wins</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[22px] font-bold text-danger tracking-tight leading-none">{losses}</p>
+                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Losses</p>
+                  </div>
+                  {winRate !== null && (
+                    <div className="text-center">
+                      <p className="text-[22px] font-bold text-accent tracking-tight leading-none">{winRate}%</p>
+                      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Win rate</p>
+                    </div>
+                  )}
+                  {lpGained !== null && (
+                    <div className="text-center ml-auto">
+                      <p className={['text-[22px] font-bold tracking-tight leading-none', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                        {lpGained >= 0 ? '+' : ''}{lpGained}
+                      </p>
+                      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">LP</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
 
           <div key={activeTab} className="animate-fade-in space-y-6">
 
