@@ -91,6 +91,7 @@ export default function PlayerPage({ params }: PageProps) {
   const [isAbsent, setIsAbsent] = useState(false)
   const [absentLoading, setAbsentLoading] = useState(false)
   const [rankRefreshing, setRankRefreshing] = useState(false)
+  const [teamPlayers, setTeamPlayers] = useState<Player[]>([])
 
   const ws = formatWeekStart(weekStart)
 
@@ -137,6 +138,12 @@ export default function PlayerPage({ params }: PageProps) {
 
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
+    fetch('/api/players')
+      .then(r => r.json())
+      .then((data: Player[]) => {
+        if (Array.isArray(data)) setTeamPlayers(data.filter(p => p.role !== 'staff'))
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -541,7 +548,77 @@ export default function PlayerPage({ params }: PageProps) {
             </>}
 
             {/* ── STATS ── */}
-            {activeTab === 'stats' && (
+            {activeTab === 'stats' && (() => {
+              const linkedPlayers = teamPlayers.filter(p => p.riot_tier && p.riot_lp != null)
+              const avgTotalLP = linkedPlayers.length > 0
+                ? Math.round(linkedPlayers.reduce((sum, p) => sum + getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!), 0) / linkedPlayers.length)
+                : null
+
+              const TIER_BASE_LOCAL: Record<string, number> = {
+                IRON: 0, BRONZE: 400, SILVER: 800, GOLD: 1200,
+                PLATINUM: 1600, EMERALD: 2000, DIAMOND: 2400,
+                MASTER: 2800, GRANDMASTER: 3200, CHALLENGER: 3600,
+              }
+              function lpToTier(totalLP: number): { tier: string; rank: string | null; lp: number } {
+                if (totalLP >= 3600) return { tier: 'CHALLENGER', rank: null, lp: totalLP - 3600 }
+                if (totalLP >= 3200) return { tier: 'GRANDMASTER', rank: null, lp: totalLP - 3200 }
+                if (totalLP >= 2800) return { tier: 'MASTER', rank: null, lp: totalLP - 2800 }
+                const brackets: Array<[number, string]> = [
+                  [2400, 'DIAMOND'], [2000, 'EMERALD'], [1600, 'PLATINUM'],
+                  [1200, 'GOLD'], [800, 'SILVER'], [400, 'BRONZE'], [0, 'IRON'],
+                ]
+                for (const [base, tier] of brackets) {
+                  if (totalLP >= base) {
+                    const rem = totalLP - base
+                    return { tier, rank: rem >= 300 ? 'I' : rem >= 200 ? 'II' : rem >= 100 ? 'III' : 'IV', lp: rem % 100 }
+                  }
+                }
+                return { tier: 'IRON', rank: 'IV', lp: totalLP }
+              }
+              void TIER_BASE_LOCAL
+
+              return <>
+              {linkedPlayers.length > 0 && avgTotalLP !== null && (() => {
+                const avg = lpToTier(avgTotalLP)
+                return (
+                  <Card>
+                    <CardHeader><CardTitle>Elo Équipe</CardTitle></CardHeader>
+                    <div className="space-y-3">
+                      <div className="rounded-xl overflow-hidden border border-border-subtle">
+                        <div className="flex items-center gap-4 px-4 py-3 bg-bg-elevated">
+                          <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
+                          <div className="ml-auto text-right">
+                            <p className="text-[11px] text-text-muted font-medium uppercase tracking-wider">Elo moyen</p>
+                            <p className="text-xs text-text-secondary mt-0.5">{linkedPlayers.length}/{teamPlayers.length} joueurs</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="divide-y divide-border-subtle">
+                        {linkedPlayers.map(p => {
+                          const isUnranked = p.riot_tier === 'UNRANKED'
+                          const gained = (!isUnranked && p.riot_lp_start != null)
+                            ? getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start
+                            : null
+                          return (
+                            <div key={p.id} className="flex items-center gap-3 py-2.5">
+                              <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
+                              <span className={['text-[13px] font-semibold flex-1 min-w-0 truncate', p.id === player?.id ? 'text-accent' : 'text-text-primary'].join(' ')}>
+                                {p.name}{p.id === player?.id ? ' (toi)' : ''}
+                              </span>
+                              {gained !== null && (
+                                <span className={['text-xs font-bold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                  {gained >= 0 ? '+' : ''}{gained} LP
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </Card>
+                )
+              })()}
+
               <Card>
                 <CardHeader><CardTitle>Statistiques de l'équipe</CardTitle></CardHeader>
                 {!stats ? (
@@ -593,7 +670,8 @@ export default function PlayerPage({ params }: PageProps) {
                   </>
                 )}
               </Card>
-            )}
+              </>
+            })()}
 
           </div>
         </main>

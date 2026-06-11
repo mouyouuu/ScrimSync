@@ -669,7 +669,7 @@ export default function AdminPage() {
                         </Button>
                       </div>
                     </CardHeader>
-                    <PlayerStatusList players={players} submissions={submissions} absenceIds={absences} />
+                    <PlayerStatusList players={teamPlayers} submissions={submissions} absenceIds={absences} />
                   </Card>
 
                   {/* Disponibilités */}
