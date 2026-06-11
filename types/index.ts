@@ -3,6 +3,17 @@ export interface Player {
   name: string
   token: string
   created_at: string
+  riot_game_name?: string | null
+  riot_tag_line?: string | null
+  riot_puuid?: string | null
+  riot_summoner_id?: string | null
+  riot_tier?: string | null
+  riot_rank?: string | null
+  riot_lp?: number | null
+  riot_wins?: number | null
+  riot_losses?: number | null
+  riot_lp_start?: number | null
+  riot_updated_at?: string | null
 }
 
 export interface Availability {

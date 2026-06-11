@@ -26,6 +26,25 @@ import {
 import { buildAvailabilityMatrix, getPerfectSlots } from '@/lib/availability'
 import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
+import { RankBadge, getTotalLP } from '@/components/lol/RankBadge'
+
+function lpToTierInfo(totalLP: number): { tier: string; rank: string | null; lp: number } {
+  if (totalLP >= 3600) return { tier: 'CHALLENGER', rank: null, lp: totalLP - 3600 }
+  if (totalLP >= 3200) return { tier: 'GRANDMASTER', rank: null, lp: totalLP - 3200 }
+  if (totalLP >= 2800) return { tier: 'MASTER', rank: null, lp: totalLP - 2800 }
+  const brackets: Array<[number, string]> = [
+    [2400, 'DIAMOND'], [2000, 'EMERALD'], [1600, 'PLATINUM'],
+    [1200, 'GOLD'], [800, 'SILVER'], [400, 'BRONZE'], [0, 'IRON'],
+  ]
+  for (const [base, tier] of brackets) {
+    if (totalLP >= base) {
+      const rem = totalLP - base
+      const rank = rem >= 300 ? 'I' : rem >= 200 ? 'II' : rem >= 100 ? 'III' : 'IV'
+      return { tier, rank, lp: rem % 100 }
+    }
+  }
+  return { tier: 'IRON', rank: 'IV', lp: totalLP }
+}
 
 function isScrimToday(scrim: Scrim, wStart: Date): boolean {
   const d = new Date(wStart)
@@ -119,6 +138,10 @@ export default function AdminPage() {
   const [relanceSending, setRelanceSending] = useState(false)
   const [relanceSent, setRelanceSent] = useState(false)
   const [absences, setAbsences] = useState<string[]>([])
+  const [riotInputs, setRiotInputs] = useState<Record<string, string>>({})
+  const [riotLinking, setRiotLinking] = useState<Record<string, boolean>>({})
+  const [riotErrors, setRiotErrors] = useState<Record<string, string>>({})
+  const [riotRefreshing, setRiotRefreshing] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -310,6 +333,48 @@ export default function AdminPage() {
     setTimeout(() => setNotifSent(false), 3000)
   }
 
+  async function handleLinkRiot(playerId: string) {
+    const input = (riotInputs[playerId] ?? '').trim()
+    const hashIdx = input.indexOf('#')
+    if (hashIdx < 1 || hashIdx === input.length - 1) {
+      setRiotErrors(prev => ({ ...prev, [playerId]: 'Format invalide — ex: Pseudo#TAG' }))
+      return
+    }
+    const gameName = input.slice(0, hashIdx).trim()
+    const tagLine = input.slice(hashIdx + 1).trim()
+    setRiotLinking(prev => ({ ...prev, [playerId]: true }))
+    setRiotErrors(prev => ({ ...prev, [playerId]: '' }))
+    const res = await fetch('/api/riot/link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: playerId, game_name: gameName, tag_line: tagLine }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setRiotErrors(prev => ({ ...prev, [playerId]: data.error ?? 'Erreur Riot API' }))
+    } else {
+      setRiotInputs(prev => ({ ...prev, [playerId]: '' }))
+      await loadData()
+    }
+    setRiotLinking(prev => ({ ...prev, [playerId]: false }))
+  }
+
+  async function handleUnlinkRiot(playerId: string) {
+    await fetch('/api/riot/link', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: playerId }),
+    })
+    await loadData()
+  }
+
+  async function handleRefreshRanks() {
+    setRiotRefreshing(true)
+    await fetch('/api/riot/refresh', { method: 'POST' })
+    await loadData()
+    setRiotRefreshing(false)
+  }
+
   async function handleResultChange(scrimId: string, result: 'win' | 'loss', score: string, notes: string) {
     await fetch(`/api/scrims/${scrimId}/result`, {
       method: 'PATCH',
@@ -439,52 +504,206 @@ export default function AdminPage() {
               </>}
 
               {/* ── ÉQUIPE ── */}
-              {activeTab === 'equipe' && <>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle>Réponses</CardTitle>
-                      <Button
-                        size="sm"
-                        variant={relanceSent ? 'success' : 'secondary'}
-                        loading={relanceSending}
-                        disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
-                        onClick={handleRelanceAbsents}
-                      >
-                        {relanceSent ? 'Envoyé !' : 'Relance'}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <PlayerStatusList players={players} submissions={submissions} absenceIds={absences} />
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <CardTitle>Disponibilités</CardTitle>
-                      <div className="flex items-center gap-3 text-xs text-text-muted">
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-2.5 w-2.5 rounded bg-success/30 border border-success/40" />
-                          5/5
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-2.5 w-2.5 rounded bg-warning/20 border border-warning/30" />
-                          4/5
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-2.5 w-2.5 rounded bg-bg-elevated border border-border-subtle" />
-                          &lt; 4
-                        </span>
+              {activeTab === 'equipe' && (() => {
+                const linkedPlayers = players.filter(p => p.riot_tier && p.riot_lp != null)
+                const avgTotalLP = linkedPlayers.length > 0
+                  ? Math.round(linkedPlayers.reduce((sum, p) => sum + getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!), 0) / linkedPlayers.length)
+                  : null
+                const totalLPGained = linkedPlayers
+                  .filter(p => p.riot_lp_start != null)
+                  .reduce((sum, p) => sum + (getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start!), 0)
+                return <>
+                  {/* Elo Équipe */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>Elo Équipe</CardTitle>
+                        <Button size="sm" variant="secondary" loading={riotRefreshing} onClick={handleRefreshRanks}>
+                          {riotRefreshing ? 'Màj...' : (
+                            <span className="flex items-center gap-1.5">
+                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                                <path d="M11.5 2A5.5 5.5 0 106.5 12M11.5 2v3.5H8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              Actualiser
+                            </span>
+                          )}
+                        </Button>
                       </div>
+                    </CardHeader>
+                    {linkedPlayers.length === 0 ? (
+                      <p className="text-sm text-text-muted">Liez des comptes LoL pour voir les stats.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {avgTotalLP !== null && (() => {
+                          const avg = lpToTierInfo(avgTotalLP)
+                          return (
+                            <div className="flex items-center gap-4 bg-bg-elevated rounded-xl px-4 py-3.5">
+                              <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
+                              <div className="border-l border-border-subtle pl-4 ml-auto text-right">
+                                <p className="text-[11px] text-text-muted uppercase tracking-wide mb-0.5">Elo moyen</p>
+                                <p className="text-sm font-semibold text-text-primary">{linkedPlayers.length}/{players.length} comptes</p>
+                              </div>
+                            </div>
+                          )
+                        })()}
+                        <div className="flex items-center gap-3 px-4 py-3 bg-bg-elevated rounded-xl">
+                          <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: totalLPGained >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)' }}>
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              {totalLPGained >= 0
+                                ? <path d="M7.5 12V3M3.5 7l4-4 4 4" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                : <path d="M7.5 3v9M3.5 8l4 4 4-4" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              }
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-[11px] text-text-muted uppercase tracking-wide">LP gagnés (total)</p>
+                            <p className={['text-[22px] font-bold tracking-tight leading-tight', totalLPGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                              {totalLPGained >= 0 ? '+' : ''}{totalLPGained}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          {linkedPlayers.map(p => {
+                            const current = getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!)
+                            const gained = p.riot_lp_start != null ? current - p.riot_lp_start : null
+                            return (
+                              <div key={p.id} className="flex items-center gap-3 py-1.5 px-1">
+                                <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
+                                <span className="text-sm font-medium text-text-primary flex-1 min-w-0 truncate">{p.name}</span>
+                                {gained !== null && (
+                                  <span className={['text-xs font-semibold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                    {gained >= 0 ? '+' : ''}{gained} LP
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+
+                  {/* Comptes LoL */}
+                  <Card>
+                    <CardHeader><CardTitle>Comptes LoL</CardTitle></CardHeader>
+                    <div className="space-y-5">
+                      {players.map(player => {
+                        const isLinked = !!(player.riot_game_name && player.riot_tier)
+                        return (
+                          <div key={player.id}>
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-[13px] font-semibold text-text-primary">{player.name}</p>
+                              {isLinked && (
+                                <button
+                                  onClick={() => handleUnlinkRiot(player.id)}
+                                  className="text-xs text-text-muted hover:text-danger transition-colors"
+                                >
+                                  Délier
+                                </button>
+                              )}
+                            </div>
+                            {isLinked ? (
+                              <div className="flex items-center gap-3 bg-bg-elevated rounded-xl px-3.5 py-3">
+                                <RankBadge
+                                  tier={player.riot_tier!}
+                                  rank={player.riot_rank}
+                                  lp={player.riot_lp}
+                                  wins={player.riot_wins}
+                                  losses={player.riot_losses}
+                                  size="md"
+                                  showRecord
+                                />
+                                <div className="ml-auto text-right">
+                                  <p className="text-xs text-text-muted">{player.riot_game_name}#{player.riot_tag_line}</p>
+                                  {player.riot_lp_start != null && (() => {
+                                    const diff = getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!) - player.riot_lp_start
+                                    return (
+                                      <p className={['text-xs font-semibold mt-0.5', diff >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                        {diff >= 0 ? '+' : ''}{diff} LP
+                                      </p>
+                                    )
+                                  })()}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Pseudo#TAG"
+                                    value={riotInputs[player.id] ?? ''}
+                                    onChange={e => setRiotInputs(prev => ({ ...prev, [player.id]: e.target.value }))}
+                                    onKeyDown={e => e.key === 'Enter' && handleLinkRiot(player.id)}
+                                    className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    loading={riotLinking[player.id]}
+                                    disabled={!(riotInputs[player.id] ?? '').includes('#') || riotLinking[player.id]}
+                                    onClick={() => handleLinkRiot(player.id)}
+                                  >
+                                    Lier
+                                  </Button>
+                                </div>
+                                {riotErrors[player.id] && (
+                                  <p className="text-xs text-danger">{riotErrors[player.id]}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
-                  </CardHeader>
-                  <AdminAvailabilityMatrix
-                    matrix={matrix}
-                    weekStart={weekStart}
-                    onCreateScrim={(day, hour) => setScrimModal({ open: true, day, hour })}
-                  />
-                </Card>
-              </>}
+                  </Card>
+
+                  {/* Réponses */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <CardTitle>Réponses</CardTitle>
+                        <Button
+                          size="sm"
+                          variant={relanceSent ? 'success' : 'secondary'}
+                          loading={relanceSending}
+                          disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
+                          onClick={handleRelanceAbsents}
+                        >
+                          {relanceSent ? 'Envoyé !' : 'Relance'}
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <PlayerStatusList players={players} submissions={submissions} absenceIds={absences} />
+                  </Card>
+
+                  {/* Disponibilités */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <CardTitle>Disponibilités</CardTitle>
+                        <div className="flex items-center gap-3 text-xs text-text-muted">
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2.5 w-2.5 rounded bg-success/30 border border-success/40" />
+                            5/5
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2.5 w-2.5 rounded bg-warning/20 border border-warning/30" />
+                            4/5
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2.5 w-2.5 rounded bg-bg-elevated border border-border-subtle" />
+                            &lt; 4
+                          </span>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <AdminAvailabilityMatrix
+                      matrix={matrix}
+                      weekStart={weekStart}
+                      onCreateScrim={(day, hour) => setScrimModal({ open: true, day, hour })}
+                    />
+                  </Card>
+                </>
+              })()}
 
               {/* ── STATS ── */}
               {activeTab === 'stats' && (
