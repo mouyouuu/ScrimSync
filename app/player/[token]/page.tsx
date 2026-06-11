@@ -90,6 +90,7 @@ export default function PlayerPage({ params }: PageProps) {
   const [countdown, setCountdown] = useState<{ text: string; scrim: Scrim } | null>(null)
   const [isAbsent, setIsAbsent] = useState(false)
   const [absentLoading, setAbsentLoading] = useState(false)
+  const [rankRefreshing, setRankRefreshing] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -230,6 +231,21 @@ export default function PlayerPage({ params }: PageProps) {
     setAbsentLoading(false)
   }
 
+  async function handleRefreshRank() {
+    if (!player) return
+    setRankRefreshing(true)
+    const res = await fetch('/api/riot/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_token: token }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setPlayer(updated)
+    }
+    setRankRefreshing(false)
+  }
+
   async function copyLastWeek() {
     if (!player) return
     const prevDate = new Date(weekStart)
@@ -325,14 +341,29 @@ export default function PlayerPage({ params }: PageProps) {
                     lp={player.riot_lp}
                     size="lg"
                   />
-                  {lpGained !== null && (
-                    <div className="ml-auto flex-shrink-0 text-right">
-                      <p className={['text-[13px] font-bold', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                        {lpGained >= 0 ? '+' : ''}{lpGained} LP
-                      </p>
-                      <p className="text-[11px] text-text-muted">cette saison</p>
-                    </div>
-                  )}
+                  <div className="ml-auto flex-shrink-0 flex items-center gap-3">
+                    {lpGained !== null && (
+                      <div className="text-right">
+                        <p className={['text-[13px] font-bold', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                          {lpGained >= 0 ? '+' : ''}{lpGained} LP
+                        </p>
+                        <p className="text-[11px] text-text-muted">cette semaine</p>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleRefreshRank}
+                      disabled={rankRefreshing}
+                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg transition-all disabled:opacity-40"
+                      title="Actualiser mon rang"
+                    >
+                      <svg
+                        width="15" height="15" viewBox="0 0 13 13" fill="none"
+                        className={rankRefreshing ? 'animate-spin' : ''}
+                      >
+                        <path d="M11.5 2A5.5 5.5 0 106.5 12M11.5 2v3.5H8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 {/* Stats ranked */}
                 {!isUnranked && (wins + losses > 0) && (
