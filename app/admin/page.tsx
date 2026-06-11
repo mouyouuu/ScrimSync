@@ -522,7 +522,7 @@ export default function AdminPage() {
                         <Button size="sm" variant="secondary" loading={riotRefreshing} onClick={handleRefreshRanks}>
                           {riotRefreshing ? 'Màj...' : (
                             <span className="flex items-center gap-1.5">
-                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                              <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
                                 <path d="M11.5 2A5.5 5.5 0 106.5 12M11.5 2v3.5H8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                               Actualiser
@@ -532,47 +532,43 @@ export default function AdminPage() {
                       </div>
                     </CardHeader>
                     {linkedPlayers.length === 0 ? (
-                      <p className="text-sm text-text-muted">Liez des comptes LoL pour voir les stats.</p>
+                      <p className="text-sm text-text-muted">Liez des comptes LoL ci-dessous pour voir les stats.</p>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
+                        {/* Elo moyen + LP gagnés */}
                         {avgTotalLP !== null && (() => {
                           const avg = lpToTierInfo(avgTotalLP)
                           return (
-                            <div className="flex items-center gap-4 bg-bg-elevated rounded-xl px-4 py-3.5">
-                              <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
-                              <div className="border-l border-border-subtle pl-4 ml-auto text-right">
-                                <p className="text-[11px] text-text-muted uppercase tracking-wide mb-0.5">Elo moyen</p>
-                                <p className="text-sm font-semibold text-text-primary">{linkedPlayers.length}/{teamPlayers.length} comptes</p>
+                            <div className="rounded-xl overflow-hidden border border-border-subtle">
+                              <div className="flex items-center gap-4 px-4 py-3 bg-bg-elevated">
+                                <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
+                                <div className="ml-auto text-right">
+                                  <p className="text-[11px] text-text-muted font-medium uppercase tracking-wider">Elo moyen équipe</p>
+                                  <p className="text-xs text-text-secondary mt-0.5">{linkedPlayers.length}/{teamPlayers.length} comptes liés</p>
+                                </div>
+                              </div>
+                              <div className="border-t border-border-subtle px-4 py-3 flex items-center justify-between">
+                                <p className="text-xs text-text-muted font-medium">LP gagnés depuis le début</p>
+                                <p className={['text-[15px] font-bold tracking-tight', totalLPGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                  {totalLPGained >= 0 ? '+' : ''}{totalLPGained} LP
+                                </p>
                               </div>
                             </div>
                           )
                         })()}
-                        <div className="flex items-center gap-3 px-4 py-3 bg-bg-elevated rounded-xl">
-                          <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: totalLPGained >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)' }}>
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                              {totalLPGained >= 0
-                                ? <path d="M7.5 12V3M3.5 7l4-4 4 4" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                : <path d="M7.5 3v9M3.5 8l4 4 4-4" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              }
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-[11px] text-text-muted uppercase tracking-wide">LP gagnés (total)</p>
-                            <p className={['text-[22px] font-bold tracking-tight leading-tight', totalLPGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                              {totalLPGained >= 0 ? '+' : ''}{totalLPGained}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
+                        {/* Liste joueurs */}
+                        <div className="divide-y divide-border-subtle">
                           {linkedPlayers.map(p => {
-                            const current = getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!)
-                            const gained = p.riot_lp_start != null ? current - p.riot_lp_start : null
+                            const isUnranked = p.riot_tier === 'UNRANKED'
+                            const gained = (!isUnranked && p.riot_lp_start != null)
+                              ? getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start
+                              : null
                             return (
-                              <div key={p.id} className="flex items-center gap-3 py-1.5 px-1">
+                              <div key={p.id} className="flex items-center gap-3 py-2.5">
                                 <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
-                                <span className="text-sm font-medium text-text-primary flex-1 min-w-0 truncate">{p.name}</span>
+                                <span className="text-[13px] font-semibold text-text-primary flex-1 min-w-0 truncate">{p.name}</span>
                                 {gained !== null && (
-                                  <span className={['text-xs font-semibold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                  <span className={['text-xs font-bold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
                                     {gained >= 0 ? '+' : ''}{gained} LP
                                   </span>
                                 )}
@@ -587,24 +583,14 @@ export default function AdminPage() {
                   {/* Comptes LoL */}
                   <Card>
                     <CardHeader><CardTitle>Comptes LoL</CardTitle></CardHeader>
-                    <div className="space-y-5">
+                    <div className="divide-y divide-border-subtle">
                       {teamPlayers.map(player => {
                         const isLinked = !!(player.riot_game_name && player.riot_tier)
+                        const isUnranked = player.riot_tier === 'UNRANKED'
                         return (
-                          <div key={player.id}>
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-[13px] font-semibold text-text-primary">{player.name}</p>
-                              {isLinked && (
-                                <button
-                                  onClick={() => handleUnlinkRiot(player.id)}
-                                  className="text-xs text-text-muted hover:text-danger transition-colors"
-                                >
-                                  Délier
-                                </button>
-                              )}
-                            </div>
+                          <div key={player.id} className="py-4 first:pt-0 last:pb-0">
                             {isLinked ? (
-                              <div className="flex items-center gap-3 bg-bg-elevated rounded-xl px-3.5 py-3">
+                              <div className="flex items-start gap-3">
                                 <RankBadge
                                   tier={player.riot_tier!}
                                   rank={player.riot_rank}
@@ -614,20 +600,30 @@ export default function AdminPage() {
                                   size="md"
                                   showRecord
                                 />
-                                <div className="ml-auto text-right">
-                                  <p className="text-xs text-text-muted">{player.riot_game_name}#{player.riot_tag_line}</p>
-                                  {player.riot_lp_start != null && (() => {
-                                    const diff = getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!) - player.riot_lp_start
-                                    return (
-                                      <p className={['text-xs font-semibold mt-0.5', diff >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                                        {diff >= 0 ? '+' : ''}{diff} LP
-                                      </p>
-                                    )
-                                  })()}
+                                <div className="flex-1 min-w-0 ml-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[13px] font-semibold text-text-primary truncate">{player.name}</p>
+                                    {!isUnranked && player.riot_lp_start != null && (() => {
+                                      const diff = getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!) - player.riot_lp_start
+                                      return (
+                                        <span className={['text-xs font-bold flex-shrink-0', diff >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                          {diff >= 0 ? '+' : ''}{diff} LP
+                                        </span>
+                                      )
+                                    })()}
+                                  </div>
+                                  <p className="text-[11px] text-text-muted mt-0.5">{player.riot_game_name}#{player.riot_tag_line}</p>
                                 </div>
+                                <button
+                                  onClick={() => handleUnlinkRiot(player.id)}
+                                  className="flex-shrink-0 text-[11px] text-text-muted hover:text-danger transition-colors mt-0.5"
+                                >
+                                  Délier
+                                </button>
                               </div>
                             ) : (
-                              <div className="space-y-1.5">
+                              <div className="space-y-2">
+                                <p className="text-[13px] font-semibold text-text-primary">{player.name}</p>
                                 <div className="flex gap-2">
                                   <input
                                     type="text"

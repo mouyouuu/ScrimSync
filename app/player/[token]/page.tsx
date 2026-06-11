@@ -316,38 +316,41 @@ export default function PlayerPage({ params }: PageProps) {
             const losses = player.riot_losses ?? 0
             const winRate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : null
             return (
-              <div className="animate-fade-in bg-bg-elevated rounded-2xl p-4 flex items-center gap-4">
-                <RankBadge
-                  tier={player.riot_tier!}
-                  rank={player.riot_rank}
-                  lp={player.riot_lp}
-                  size="lg"
-                />
-                <div className="h-10 w-px bg-border-subtle flex-shrink-0" />
-                <div className="flex gap-4 flex-1 min-w-0">
-                  <div className="text-center">
-                    <p className="text-[22px] font-bold text-success tracking-tight leading-none">{wins}</p>
-                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Wins</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[22px] font-bold text-danger tracking-tight leading-none">{losses}</p>
-                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Losses</p>
-                  </div>
-                  {winRate !== null && (
-                    <div className="text-center">
-                      <p className="text-[22px] font-bold text-accent tracking-tight leading-none">{winRate}%</p>
-                      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">Win rate</p>
-                    </div>
-                  )}
+              <div className="animate-fade-in rounded-2xl overflow-hidden border border-border-subtle">
+                {/* Rang principal */}
+                <div className="bg-bg-elevated px-4 pt-4 pb-3 flex items-center gap-3">
+                  <RankBadge
+                    tier={player.riot_tier!}
+                    rank={player.riot_rank}
+                    lp={player.riot_lp}
+                    size="lg"
+                  />
                   {lpGained !== null && (
-                    <div className="text-center ml-auto">
-                      <p className={['text-[22px] font-bold tracking-tight leading-none', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                        {lpGained >= 0 ? '+' : ''}{lpGained}
+                    <div className="ml-auto flex-shrink-0 text-right">
+                      <p className={['text-[13px] font-bold', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                        {lpGained >= 0 ? '+' : ''}{lpGained} LP
                       </p>
-                      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wide">LP</p>
+                      <p className="text-[11px] text-text-muted">cette saison</p>
                     </div>
                   )}
                 </div>
+                {/* Stats ranked */}
+                {!isUnranked && (wins + losses > 0) && (
+                  <div className="grid grid-cols-3 divide-x divide-border-subtle border-t border-border-subtle">
+                    <div className="py-3 text-center">
+                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{wins}</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Victoires</p>
+                    </div>
+                    <div className="py-3 text-center">
+                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{losses}</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Défaites</p>
+                    </div>
+                    <div className="py-3 text-center">
+                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{winRate}%</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Win rate</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })()}
