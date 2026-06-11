@@ -505,7 +505,8 @@ export default function AdminPage() {
 
               {/* ── ÉQUIPE ── */}
               {activeTab === 'equipe' && (() => {
-                const linkedPlayers = players.filter(p => p.riot_tier && p.riot_lp != null)
+                const teamPlayers = players.filter(p => p.role !== 'staff')
+                const linkedPlayers = teamPlayers.filter(p => p.riot_tier && p.riot_lp != null)
                 const avgTotalLP = linkedPlayers.length > 0
                   ? Math.round(linkedPlayers.reduce((sum, p) => sum + getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!), 0) / linkedPlayers.length)
                   : null
@@ -541,7 +542,7 @@ export default function AdminPage() {
                               <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
                               <div className="border-l border-border-subtle pl-4 ml-auto text-right">
                                 <p className="text-[11px] text-text-muted uppercase tracking-wide mb-0.5">Elo moyen</p>
-                                <p className="text-sm font-semibold text-text-primary">{linkedPlayers.length}/{players.length} comptes</p>
+                                <p className="text-sm font-semibold text-text-primary">{linkedPlayers.length}/{teamPlayers.length} comptes</p>
                               </div>
                             </div>
                           )
@@ -587,7 +588,7 @@ export default function AdminPage() {
                   <Card>
                     <CardHeader><CardTitle>Comptes LoL</CardTitle></CardHeader>
                     <div className="space-y-5">
-                      {players.map(player => {
+                      {teamPlayers.map(player => {
                         const isLinked = !!(player.riot_game_name && player.riot_tier)
                         return (
                           <div key={player.id}>
@@ -787,6 +788,26 @@ export default function AdminPage() {
                           className="flex-1 min-w-0 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
                         />
                         <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={async () => {
+                              const newRole = player.role === 'staff' ? 'player' : 'staff'
+                              await fetch(`/api/players/${player.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ role: newRole }),
+                              })
+                              await loadData()
+                            }}
+                            className={[
+                              'px-2 py-1 rounded-lg text-xs font-semibold transition-all flex-shrink-0',
+                              player.role === 'staff'
+                                ? 'bg-warning/10 text-warning border border-warning/20'
+                                : 'bg-success/10 text-success border border-success/20',
+                            ].join(' ')}
+                            title="Changer le rôle"
+                          >
+                            {player.role === 'staff' ? 'Staff' : 'Joueur'}
+                          </button>
                           <Button
                             size="sm"
                             variant="secondary"

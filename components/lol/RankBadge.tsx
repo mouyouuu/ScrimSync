@@ -1,15 +1,15 @@
-const TIER_META: Record<string, { color: string; bg: string; label: string; short: string }> = {
-  IRON:         { color: '#9CA3AF', bg: 'rgba(156,163,175,0.12)', label: 'Fer',        short: 'Fe' },
-  BRONZE:       { color: '#CD7F32', bg: 'rgba(205,127,50,0.12)',  label: 'Bronze',     short: 'Br' },
-  SILVER:       { color: '#8AA0B0', bg: 'rgba(138,160,176,0.12)', label: 'Argent',     short: 'Ag' },
-  GOLD:         { color: '#B8892A', bg: 'rgba(184,137,42,0.12)',  label: 'Or',         short: 'Or' },
-  PLATINUM:     { color: '#0891B2', bg: 'rgba(8,145,178,0.12)',   label: 'Platine',    short: 'Pl' },
-  EMERALD:      { color: '#059669', bg: 'rgba(5,150,105,0.12)',   label: 'Émeraude',   short: 'Em' },
-  DIAMOND:      { color: '#5B8DEF', bg: 'rgba(91,141,239,0.12)', label: 'Diamant',    short: 'Di' },
-  MASTER:       { color: '#9D48E0', bg: 'rgba(157,72,224,0.12)', label: 'Master',     short: 'M'  },
-  GRANDMASTER:  { color: '#C0392B', bg: 'rgba(192,57,43,0.12)',  label: 'Grandmaster',short: 'GM' },
-  CHALLENGER:   { color: '#E9B84A', bg: 'rgba(233,184,74,0.12)', label: 'Challenger', short: 'Ch' },
-  UNRANKED:     { color: '#6B7280', bg: 'rgba(107,114,128,0.10)', label: 'Unranked',  short: 'U'  },
+const TIER_META: Record<string, { color: string; label: string }> = {
+  IRON:         { color: '#9CA3AF', label: 'Fer' },
+  BRONZE:       { color: '#CD7F32', label: 'Bronze' },
+  SILVER:       { color: '#8AA0B0', label: 'Argent' },
+  GOLD:         { color: '#B8892A', label: 'Or' },
+  PLATINUM:     { color: '#0891B2', label: 'Platine' },
+  EMERALD:      { color: '#059669', label: 'Émeraude' },
+  DIAMOND:      { color: '#5B8DEF', label: 'Diamant' },
+  MASTER:       { color: '#9D48E0', label: 'Master' },
+  GRANDMASTER:  { color: '#C0392B', label: 'Grandmaster' },
+  CHALLENGER:   { color: '#E9B84A', label: 'Challenger' },
+  UNRANKED:     { color: '#6B7280', label: 'Unranked' },
 }
 
 const TIER_BASE: Record<string, number> = {
@@ -23,6 +23,11 @@ export function getTotalLP(tier: string, rank: string | null | undefined, lp: nu
   const base = TIER_BASE[tier] ?? 0
   const rankBonus = (rank && RANK_LP[rank] != null) ? RANK_LP[rank] : 0
   return base + rankBonus + lp
+}
+
+function tierImageUrl(tier: string): string {
+  const t = tier.toLowerCase()
+  return `https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-shared-components/global/default/images/ranked-emblems/emblem-${t}.png`
 }
 
 interface RankBadgeProps {
@@ -41,10 +46,8 @@ export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecor
   const isApex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(key)
   const isUnranked = key === 'UNRANKED'
 
-  const circleSizes = { sm: 22, md: 30, lg: 42 }
-  const fontSizes   = { sm: 9,  md: 11, lg: 14 }
-  const sz = circleSizes[size]
-  const fs = fontSizes[size]
+  const imgSizes = { sm: 24, md: 32, lg: 48 }
+  const imgSize = imgSizes[size]
 
   const rankLabel = isUnranked
     ? 'Unranked'
@@ -54,23 +57,25 @@ export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecor
 
   return (
     <div className="flex items-center gap-2">
-      {/* Icône tier */}
-      <div
-        className="flex-shrink-0 flex items-center justify-center rounded-lg font-bold"
-        style={{
-          width: sz,
-          height: sz,
-          background: meta.bg,
-          border: `1.5px solid ${meta.color}40`,
-          color: meta.color,
-          fontSize: fs,
-          letterSpacing: '-0.02em',
-        }}
-      >
-        {meta.short}
+      <div className="flex-shrink-0" style={{ width: imgSize, height: imgSize }}>
+        {isUnranked ? (
+          <div
+            className="w-full h-full rounded-lg flex items-center justify-center text-[9px] font-bold"
+            style={{ background: 'rgba(107,114,128,0.12)', color: '#6B7280', border: '1.5px solid rgba(107,114,128,0.2)' }}
+          >
+            U
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={tierImageUrl(key)}
+            alt={meta.label}
+            width={imgSize}
+            height={imgSize}
+            style={{ objectFit: 'contain', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }}
+          />
+        )}
       </div>
-
-      {/* Texte */}
       <div className="min-w-0">
         <p className="text-xs font-semibold leading-tight truncate" style={{ color: meta.color }}>
           {rankLabel}

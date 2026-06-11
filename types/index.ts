@@ -14,6 +14,7 @@ export interface Player {
   riot_losses?: number | null
   riot_lp_start?: number | null
   riot_updated_at?: string | null
+  role?: string | null
 }
 
 export interface Availability {

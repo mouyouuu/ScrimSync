@@ -9,13 +9,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!isAdmin(request)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const { id } = await params
-  const { name } = await request.json()
-  if (!name?.trim()) return NextResponse.json({ error: 'Nom requis' }, { status: 400 })
+  const body = await request.json()
+  const updates: Record<string, unknown> = {}
+  if (body.name !== undefined) {
+    if (!body.name?.trim()) return NextResponse.json({ error: 'Nom requis' }, { status: 400 })
+    updates.name = body.name.trim()
+  }
+  if (body.role !== undefined) updates.role = body.role
 
   const supabase = createServerClient()
   const { data, error } = await supabase
     .from('players')
-    .update({ name: name.trim() })
+    .update(updates)
     .eq('id', id)
     .select()
     .single()
