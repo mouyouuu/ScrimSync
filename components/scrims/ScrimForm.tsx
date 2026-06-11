@@ -18,10 +18,10 @@ interface ScrimFormProps {
   onCancel: () => void
 }
 
-const STATUS_OPTIONS: { value: ScrimStatus; label: string }[] = [
-  { value: 'confirmed', label: 'Confirmé' },
-  { value: 'pending',   label: 'En attente' },
-  { value: 'cancelled', label: 'Annulé' },
+const STATUS_OPTIONS: { value: ScrimStatus; label: string; colors: string; activeColors: string }[] = [
+  { value: 'confirmed', label: 'Confirmé',   colors: 'text-text-muted border-border-subtle bg-bg-elevated', activeColors: 'text-success border-success/40 bg-success/10' },
+  { value: 'pending',   label: 'En attente', colors: 'text-text-muted border-border-subtle bg-bg-elevated', activeColors: 'text-warning border-warning/40 bg-warning/10' },
+  { value: 'cancelled', label: 'Annulé',     colors: 'text-text-muted border-border-subtle bg-bg-elevated', activeColors: 'text-danger  border-danger/40  bg-danger/10'  },
 ]
 
 export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onSubmit, onCancel }: ScrimFormProps) {
@@ -55,10 +55,10 @@ export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onS
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-3">
         <Select label="Jour" options={dayOptions} value={form.day_of_week} onChange={e => set('day_of_week', Number(e.target.value))} error={errors.day_of_week} />
-        <Select label="Heure de début" options={hourOptions} value={form.start_hour} onChange={e => set('start_hour', Number(e.target.value))} error={errors.start_hour} />
+        <Select label="Heure" options={hourOptions} value={form.start_hour} onChange={e => set('start_hour', Number(e.target.value))} error={errors.start_hour} />
       </div>
 
       <Input
@@ -79,9 +79,8 @@ export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onS
         inputMode="url"
       />
 
-      {/* Statut */}
       <div>
-        <p className="text-xs font-medium text-text-secondary mb-2">Statut</p>
+        <p className="text-sm font-medium text-text-secondary mb-2.5">Statut</p>
         <div className="flex gap-2">
           {STATUS_OPTIONS.map(opt => (
             <button
@@ -89,12 +88,8 @@ export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onS
               type="button"
               onClick={() => set('status', opt.value)}
               className={[
-                'flex-1 py-2 rounded-lg border text-xs font-medium transition-all duration-150',
-                form.status === opt.value
-                  ? opt.value === 'confirmed' ? 'bg-success/15 border-success/40 text-success'
-                    : opt.value === 'pending' ? 'bg-warning/15 border-warning/40 text-warning'
-                    : 'bg-danger/15 border-danger/40 text-danger'
-                  : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border',
+                'flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-150 active:scale-[0.97]',
+                form.status === opt.value ? opt.activeColors : opt.colors,
               ].join(' ')}
             >
               {opt.label}
@@ -108,14 +103,20 @@ export function ScrimForm({ weekStart, initialDay, initialHour, initialData, onS
         placeholder="Informations supplémentaires..."
         value={form.notes}
         onChange={e => set('notes', e.target.value)}
-        rows={3}
+        rows={2}
       />
 
-      <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
-        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Annuler</Button>
-        <Button type="submit" loading={loading} className="flex-1 whitespace-nowrap">
-          {initialData ? 'Enregistrer' : 'Confirmer le scrim'}
+      <div className="pt-1 space-y-2">
+        <Button type="submit" size="lg" loading={loading} className="w-full">
+          {initialData ? 'Enregistrer les modifications' : 'Confirmer le scrim'}
         </Button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="w-full py-3 text-sm font-medium text-text-muted hover:text-text-secondary transition-colors"
+        >
+          Annuler
+        </button>
       </div>
     </form>
   )
