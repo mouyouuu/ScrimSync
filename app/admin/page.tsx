@@ -387,7 +387,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="border-b border-border-subtle bg-bg-surface/80 backdrop-blur-sm sticky top-0 z-10 pt-safe">
+      <header className="sticky top-0 z-10 pt-safe" style={{ background: 'rgba(9,9,11,0.82)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
@@ -434,7 +434,7 @@ export default function AdminPage() {
                       {perfectSlots.map(slot => (
                         <div
                           key={`${slot.day_of_week}-${slot.start_hour}`}
-                          className="flex items-center gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
+                          className="flex items-center gap-3 rounded-2xl border border-success/15 bg-success/[0.04] px-4 py-3"
                         >
                           <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" />
                           <p className="flex-1 min-w-0 text-sm font-medium text-text-primary truncate">
@@ -532,24 +532,27 @@ export default function AdminPage() {
                       </div>
                     </CardHeader>
                     {linkedPlayers.length === 0 ? (
-                      <p className="text-sm text-text-muted">Liez des comptes LoL ci-dessous pour voir les stats.</p>
+                      <p className="text-sm text-text-muted">Liez des comptes LoL ci-dessous pour voir les stats d'équipe.</p>
                     ) : (
                       <div className="space-y-3">
-                        {/* Elo moyen + LP gagnés */}
+                        {/* Hero Elo moyen */}
                         {avgTotalLP !== null && (() => {
                           const avg = lpToTierInfo(avgTotalLP)
+                          const tierLabel = avg.tier.charAt(0) + avg.tier.slice(1).toLowerCase()
                           return (
-                            <div className="rounded-xl overflow-hidden border border-border-subtle">
-                              <div className="flex items-center gap-4 px-4 py-3 bg-bg-elevated">
+                            <div className="rounded-2xl overflow-hidden border border-white/[0.07]" style={{ background: 'linear-gradient(135deg, rgba(108,92,231,0.10) 0%, rgba(30,30,38,0.95) 60%)' }}>
+                              <div className="flex items-center gap-4 px-5 py-5">
                                 <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
-                                <div className="ml-auto text-right">
-                                  <p className="text-[11px] text-text-muted font-medium uppercase tracking-wider">Elo moyen équipe</p>
-                                  <p className="text-xs text-text-secondary mt-0.5">{linkedPlayers.length}/{teamPlayers.length} comptes liés</p>
+                                <div>
+                                  <p className="text-[22px] font-bold text-text-primary tracking-tight leading-none">
+                                    {tierLabel}{avg.rank ? ` ${avg.rank}` : ''}
+                                  </p>
+                                  <p className="text-sm text-text-muted mt-1">{avg.lp} LP &middot; {linkedPlayers.length}/{teamPlayers.length} liés</p>
                                 </div>
                               </div>
-                              <div className="border-t border-border-subtle px-4 py-3 flex items-center justify-between">
-                                <p className="text-xs text-text-muted font-medium">LP gagnés depuis le début</p>
-                                <p className={['text-[15px] font-bold tracking-tight', totalLPGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                              <div className="border-t border-white/[0.06] px-5 py-3 flex items-center justify-between">
+                                <p className="text-xs font-medium text-text-muted">Progression cette semaine</p>
+                                <p className={['text-base font-bold tracking-tight', totalLPGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
                                   {totalLPGained >= 0 ? '+' : ''}{totalLPGained} LP
                                 </p>
                               </div>
@@ -557,18 +560,18 @@ export default function AdminPage() {
                           )
                         })()}
                         {/* Liste joueurs */}
-                        <div className="divide-y divide-border-subtle">
+                        <div className="space-y-1.5 pt-1">
                           {linkedPlayers.map(p => {
                             const isUnranked = p.riot_tier === 'UNRANKED'
                             const gained = (!isUnranked && p.riot_lp_start != null)
                               ? getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start
                               : null
                             return (
-                              <div key={p.id} className="flex items-center gap-3 py-2.5">
+                              <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.03] transition-colors">
                                 <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
                                 <span className="text-[13px] font-semibold text-text-primary flex-1 min-w-0 truncate">{p.name}</span>
                                 {gained !== null && (
-                                  <span className={['text-xs font-bold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                  <span className={['text-xs font-bold flex-shrink-0 tabular-nums', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
                                     {gained >= 0 ? '+' : ''}{gained} LP
                                   </span>
                                 )}
@@ -583,46 +586,52 @@ export default function AdminPage() {
                   {/* Comptes LoL */}
                   <Card>
                     <CardHeader><CardTitle>Comptes LoL</CardTitle></CardHeader>
-                    <div className="divide-y divide-border-subtle">
+                    <div className="space-y-2">
                       {teamPlayers.map(player => {
                         const isLinked = !!(player.riot_game_name && player.riot_tier)
                         const isUnranked = player.riot_tier === 'UNRANKED'
                         return (
-                          <div key={player.id} className="py-4 first:pt-0 last:pb-0">
+                          <div key={player.id} className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4">
                             {isLinked ? (
-                              <div className="flex items-start gap-3">
+                              <div className="flex items-center gap-3">
                                 <RankBadge
                                   tier={player.riot_tier!}
                                   rank={player.riot_rank}
                                   lp={player.riot_lp}
-                                  wins={player.riot_wins}
-                                  losses={player.riot_losses}
                                   size="md"
-                                  showRecord
                                 />
-                                <div className="flex-1 min-w-0 ml-1">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="text-[13px] font-semibold text-text-primary truncate">{player.name}</p>
-                                    {!isUnranked && player.riot_lp_start != null && (() => {
-                                      const diff = getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!) - player.riot_lp_start
-                                      return (
-                                        <span className={['text-xs font-bold flex-shrink-0', diff >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                                          {diff >= 0 ? '+' : ''}{diff} LP
-                                        </span>
-                                      )
-                                    })()}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <p className="text-[14px] font-semibold text-text-primary truncate">{player.name}</p>
+                                      <p className="text-[11px] text-text-muted mt-0.5 truncate">{player.riot_game_name}#{player.riot_tag_line}</p>
+                                      {player.riot_wins != null && player.riot_losses != null && (
+                                        <p className="text-[11px] text-text-disabled mt-0.5">
+                                          {player.riot_wins}W {player.riot_losses}L &middot; {Math.round(player.riot_wins / Math.max(1, player.riot_wins + player.riot_losses) * 100)}% WR
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                      {!isUnranked && player.riot_lp_start != null && (() => {
+                                        const diff = getTotalLP(player.riot_tier!, player.riot_rank, player.riot_lp!) - player.riot_lp_start
+                                        return (
+                                          <span className={['text-xs font-bold tabular-nums', diff >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                            {diff >= 0 ? '+' : ''}{diff} LP
+                                          </span>
+                                        )
+                                      })()}
+                                      <button
+                                        onClick={() => handleUnlinkRiot(player.id)}
+                                        className="text-[11px] text-text-disabled hover:text-danger transition-colors"
+                                      >
+                                        Délier
+                                      </button>
+                                    </div>
                                   </div>
-                                  <p className="text-[11px] text-text-muted mt-0.5">{player.riot_game_name}#{player.riot_tag_line}</p>
                                 </div>
-                                <button
-                                  onClick={() => handleUnlinkRiot(player.id)}
-                                  className="flex-shrink-0 text-[11px] text-text-muted hover:text-danger transition-colors mt-0.5"
-                                >
-                                  Délier
-                                </button>
                               </div>
                             ) : (
-                              <div className="space-y-2">
+                              <div className="space-y-2.5">
                                 <p className="text-[13px] font-semibold text-text-primary">{player.name}</p>
                                 <div className="flex gap-2">
                                   <input
@@ -631,7 +640,7 @@ export default function AdminPage() {
                                     value={riotInputs[player.id] ?? ''}
                                     onChange={e => setRiotInputs(prev => ({ ...prev, [player.id]: e.target.value }))}
                                     onKeyDown={e => e.key === 'Enter' && handleLinkRiot(player.id)}
-                                    className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                                    className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
                                   />
                                   <Button
                                     size="sm"
@@ -715,24 +724,24 @@ export default function AdminPage() {
                       description="Les stats apparaîtront après votre premier scrim joué."
                     />
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Victoires</p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Victoires</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Défaites</p>
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Défaites</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Matchs</p>
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Matchs</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-accent tracking-tight leading-none">
+                      <div className="rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 text-center">
+                        <p className="text-[36px] font-bold text-accent tracking-tight leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Win rate</p>
+                        <p className="text-[11px] text-accent/60 mt-2 font-medium uppercase tracking-wider">Win rate</p>
                       </div>
                     </div>
                   )}
@@ -751,14 +760,14 @@ export default function AdminPage() {
                       placeholder="Titre (ex: Scrim annulé)"
                       value={notifForm.title}
                       onChange={e => setNotifForm(f => ({ ...f, title: e.target.value }))}
-                      className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
                     />
                     <input
                       type="text"
                       placeholder="Message (optionnel)"
                       value={notifForm.body}
                       onChange={e => setNotifForm(f => ({ ...f, body: e.target.value }))}
-                      className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
                     />
                     <Button
                       size="sm"
@@ -774,16 +783,29 @@ export default function AdminPage() {
 
                 <Card>
                   <CardHeader><CardTitle>Joueurs</CardTitle></CardHeader>
-                  <div className="space-y-2">
+                  <div className="divide-y divide-white/[0.04]">
                     {players.map(player => (
-                      <div key={player.id} className="flex items-center gap-2 py-1">
+                      <div key={player.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <div className="h-8 w-8 rounded-full bg-accent/[0.12] border border-accent/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-accent">{player.name[0]?.toUpperCase()}</span>
+                        </div>
                         <input
                           type="text"
                           value={playerEdits[player.id] ?? player.name}
                           onChange={e => setPlayerEdits(prev => ({ ...prev, [player.id]: e.target.value }))}
-                          className="flex-1 min-w-0 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
+                          className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-text-primary focus:outline-none border-b border-transparent focus:border-accent/40 pb-0.5 transition-colors"
                         />
-                        <div className="flex items-center gap-1 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {playerEdits[player.id] !== undefined && playerEdits[player.id] !== player.name && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              loading={playerSaving === player.id}
+                              onClick={() => handleSavePlayerName(player.id)}
+                            >
+                              ✓
+                            </Button>
+                          )}
                           <button
                             onClick={async () => {
                               const newRole = player.role === 'staff' ? 'player' : 'staff'
@@ -795,30 +817,19 @@ export default function AdminPage() {
                               await loadData()
                             }}
                             className={[
-                              'px-2 py-1 rounded-lg text-xs font-semibold transition-all flex-shrink-0',
+                              'px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all flex-shrink-0 border',
                               player.role === 'staff'
-                                ? 'bg-warning/10 text-warning border border-warning/20'
-                                : 'bg-success/10 text-success border border-success/20',
+                                ? 'bg-warning/10 text-warning border-warning/25'
+                                : 'bg-success/10 text-success border-success/25',
                             ].join(' ')}
-                            title="Changer le rôle"
                           >
                             {player.role === 'staff' ? 'Staff' : 'Joueur'}
                           </button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            loading={playerSaving === player.id}
-                            disabled={playerEdits[player.id] === player.name || playerSaving === player.id}
-                            onClick={() => handleSavePlayerName(player.id)}
-                          >
-                            Sauvegarder
-                          </Button>
                           <button
                             onClick={() => setDeletePlayerConfirm(player.id)}
-                            className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all"
-                            title="Supprimer"
+                            className="p-1.5 rounded-lg text-text-disabled hover:text-danger hover:bg-danger/10 transition-all"
                           >
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                            <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
                               <path d="M2 4h11M5 4V2.5A1.5 1.5 0 016.5 1h2A1.5 1.5 0 0110 2.5V4M6 7v4M9 7v4M3 4l.8 8.5A1 1 0 004.8 13.5h5.4a1 1 0 001-.995L12 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </button>
@@ -827,8 +838,8 @@ export default function AdminPage() {
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-border-subtle space-y-3">
-                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">Ajouter un joueur</p>
+                  <div className="mt-4 pt-4 border-t border-white/[0.05] space-y-3">
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Ajouter un joueur</p>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -836,7 +847,7 @@ export default function AdminPage() {
                         value={newPlayerName}
                         onChange={e => setNewPlayerName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleCreatePlayer()}
-                        className="flex-1 rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+                        className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
                       />
                       <Button
                         size="sm"

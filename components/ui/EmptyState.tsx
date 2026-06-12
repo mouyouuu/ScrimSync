@@ -39,13 +39,13 @@ export function EmptyState({ title, description, icon, action, variant = 'defaul
   const defaultIcon = ICONS[variant]
 
   return (
-    <div className="flex flex-col items-center justify-center py-14 text-center px-4">
-      <div className="mb-5 rounded-2xl bg-bg-elevated p-4 text-text-disabled border border-border-subtle">
+    <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+      <div className="mb-4 text-text-disabled/50">
         {icon ?? defaultIcon}
       </div>
-      <p className="text-[15px] font-semibold text-text-secondary">{title}</p>
+      <p className="text-[14px] font-semibold text-text-secondary">{title}</p>
       {description && (
-        <p className="mt-2 text-sm text-text-muted max-w-xs leading-relaxed">{description}</p>
+        <p className="mt-1.5 text-[13px] text-text-muted max-w-xs leading-relaxed">{description}</p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>

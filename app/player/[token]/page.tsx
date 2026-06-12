@@ -339,32 +339,42 @@ export default function PlayerPage({ params }: PageProps) {
             const losses = player.riot_losses ?? 0
             const winRate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : null
             return (
-              <div className="animate-fade-in rounded-2xl overflow-hidden border border-border-subtle">
+              <div className="animate-fade-in rounded-2xl overflow-hidden border border-white/[0.07]" style={{ background: 'linear-gradient(135deg, rgba(108,92,231,0.10) 0%, rgba(20,20,26,0.98) 60%)' }}>
                 {/* Rang principal */}
-                <div className="bg-bg-elevated px-4 pt-4 pb-3 flex items-center gap-3">
+                <div className="px-5 pt-5 pb-4 flex items-center gap-4">
                   <RankBadge
                     tier={player.riot_tier!}
                     rank={player.riot_rank}
                     lp={player.riot_lp}
                     size="lg"
                   />
-                  <div className="ml-auto flex-shrink-0 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    {(() => {
+                      const tierLabel = player.riot_tier!.charAt(0) + player.riot_tier!.slice(1).toLowerCase()
+                      return (
+                        <>
+                          <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">
+                            {tierLabel}{player.riot_rank ? ` ${player.riot_rank}` : ''}
+                          </p>
+                          {!isUnranked && <p className="text-sm text-text-muted mt-1">{player.riot_lp} LP</p>}
+                        </>
+                      )
+                    })()}
+                  </div>
+                  <div className="flex-shrink-0 flex flex-col items-end gap-2">
                     {lpGained !== null && (
-                      <div className="text-right">
-                        <p className={['text-[13px] font-bold', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
-                          {lpGained >= 0 ? '+' : ''}{lpGained} LP
-                        </p>
-                        <p className="text-[11px] text-text-muted">cette semaine</p>
-                      </div>
+                      <p className={['text-[15px] font-bold tabular-nums', lpGained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                        {lpGained >= 0 ? '+' : ''}{lpGained} LP
+                      </p>
                     )}
                     <button
                       onClick={handleRefreshRank}
                       disabled={rankRefreshing}
-                      className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg transition-all disabled:opacity-40"
+                      className="p-1.5 rounded-lg text-text-muted hover:text-text-secondary transition-all disabled:opacity-40"
                       title="Actualiser mon rang"
                     >
                       <svg
-                        width="15" height="15" viewBox="0 0 13 13" fill="none"
+                        width="14" height="14" viewBox="0 0 13 13" fill="none"
                         className={rankRefreshing ? 'animate-spin' : ''}
                       >
                         <path d="M11.5 2A5.5 5.5 0 106.5 12M11.5 2v3.5H8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -374,18 +384,18 @@ export default function PlayerPage({ params }: PageProps) {
                 </div>
                 {/* Stats ranked */}
                 {!isUnranked && (wins + losses > 0) && (
-                  <div className="grid grid-cols-3 divide-x divide-border-subtle border-t border-border-subtle">
+                  <div className="grid grid-cols-3 divide-x divide-white/[0.06] border-t border-white/[0.06]">
                     <div className="py-3 text-center">
-                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{wins}</p>
-                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Victoires</p>
+                      <p className="text-[22px] font-bold text-success tracking-tight leading-none">{wins}</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">V</p>
                     </div>
                     <div className="py-3 text-center">
-                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{losses}</p>
-                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Défaites</p>
+                      <p className="text-[22px] font-bold text-danger tracking-tight leading-none">{losses}</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">D</p>
                     </div>
                     <div className="py-3 text-center">
-                      <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">{winRate}%</p>
-                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">Win rate</p>
+                      <p className="text-[22px] font-bold text-accent tracking-tight leading-none">{winRate}%</p>
+                      <p className="text-[10px] text-text-muted mt-1.5 font-medium uppercase tracking-wider">WR</p>
                     </div>
                   </div>
                 )}

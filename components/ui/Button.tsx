@@ -10,25 +10,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', loading, className, children, disabled, ...props }, ref) => {
     const base =
-      'flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:pointer-events-none select-none tracking-tight'
+      'flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:pointer-events-none select-none tracking-tight'
 
     const variants = {
       primary:
-        'bg-accent hover:bg-accent-hover active:scale-[0.98] text-white shadow-accent',
+        'bg-accent hover:bg-accent-hover active:scale-[0.97] text-white shadow-accent',
       secondary:
-        'bg-bg-elevated hover:bg-bg-hover active:scale-[0.98] text-text-primary border border-border',
+        'bg-white/[0.06] hover:bg-white/[0.10] active:scale-[0.97] text-text-primary border border-white/[0.08]',
       ghost:
-        'hover:bg-bg-elevated active:scale-[0.98] text-text-secondary hover:text-text-primary',
+        'hover:bg-white/[0.06] active:scale-[0.97] text-text-secondary hover:text-text-primary',
       danger:
-        'bg-danger/10 hover:bg-danger/20 active:scale-[0.98] text-danger border border-danger/20',
+        'bg-danger/10 hover:bg-danger/15 active:scale-[0.97] text-danger border border-danger/20',
       success:
-        'bg-success/10 hover:bg-success/20 active:scale-[0.98] text-success border border-success/20',
+        'bg-success/10 hover:bg-success/15 active:scale-[0.97] text-success border border-success/20',
     }
 
     const sizes = {
       sm: 'h-8 px-3.5 text-[13px] gap-1.5',
       md: 'h-9 px-4 text-sm gap-2',
-      lg: 'h-12 px-5 text-[15px] gap-2 rounded-xl',
+      lg: 'h-12 px-5 text-[15px] gap-2',
     }
 
     return (

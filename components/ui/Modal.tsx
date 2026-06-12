@@ -91,8 +91,8 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       <div
         ref={sheetRef}
         className={cn(
-          'w-full bg-bg-surface border border-border-subtle shadow-xl',
-          'rounded-t-2xl sm:rounded-2xl',
+          'w-full bg-bg-surface border border-white/[0.07] shadow-glass',
+          'rounded-t-3xl sm:rounded-3xl',
           'transition-transform duration-300 ease-out',
           sizes[size],
           visible ? 'translate-y-0' : 'translate-y-full sm:translate-y-4'
@@ -105,7 +105,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border-subtle">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
           <h2 className="text-base font-semibold text-text-primary">{title}</h2>
           <button
             onClick={onClose}

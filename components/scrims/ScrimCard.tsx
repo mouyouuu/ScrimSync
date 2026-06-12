@@ -14,10 +14,10 @@ interface ScrimCardProps {
   isAdmin?: boolean
 }
 
-const STATUS_CONFIG: Record<ScrimStatus, { label: string; dot: string; textColor: string; border: string; bg: string }> = {
-  confirmed: { label: 'Confirmé',   dot: 'bg-success',  textColor: 'text-success',  border: 'border-success/30', bg: 'bg-success/5'  },
-  pending:   { label: 'En attente', dot: 'bg-warning',  textColor: 'text-warning',  border: 'border-warning/30', bg: 'bg-warning/5'  },
-  cancelled: { label: 'Annulé',     dot: 'bg-danger',   textColor: 'text-danger',   border: 'border-danger/30',  bg: 'bg-danger/5'   },
+const STATUS_CONFIG: Record<ScrimStatus, { label: string; dot: string; textColor: string; border: string; bg: string; opacity: string }> = {
+  confirmed: { label: 'Confirmé',   dot: 'bg-success',      textColor: 'text-success',       border: 'border-success/20',  bg: 'bg-success/[0.04]',  opacity: '' },
+  pending:   { label: 'En attente', dot: 'bg-warning',      textColor: 'text-warning',       border: 'border-warning/20',  bg: 'bg-warning/[0.04]',  opacity: '' },
+  cancelled: { label: 'Annulé',     dot: 'bg-danger/50',    textColor: 'text-danger/70',     border: 'border-danger/[0.12]', bg: 'bg-danger/[0.02]', opacity: 'opacity-60' },
 }
 
 export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, isAdmin }: ScrimCardProps) {
@@ -28,7 +28,7 @@ export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, 
 
   return (
     <>
-      <div className={`${cfg.border} ${cfg.bg} border p-4 rounded-xl`}>
+      <div className={`${cfg.border} ${cfg.bg} ${cfg.opacity} border p-4 rounded-2xl transition-opacity`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
