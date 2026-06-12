@@ -354,7 +354,7 @@ export default function PlayerPage({ params }: PageProps) {
                       return (
                         <>
                           <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">
-                            {tierLabel}{player.riot_rank ? ` ${player.riot_rank}` : ''}
+                            {tierLabel}{!['MASTER','GRANDMASTER','CHALLENGER'].includes(player.riot_tier!.toUpperCase()) && player.riot_rank ? ` ${player.riot_rank}` : ''}
                           </p>
                           {!isUnranked && <p className="text-sm text-text-muted mt-1">{player.riot_lp} LP</p>}
                         </>
