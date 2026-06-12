@@ -81,7 +81,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       document.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('touchend', onTouchEnd)
     }
-  }, [onClose])
+  }, [onClose, mounted])
 
   if (!mounted) return null
 
