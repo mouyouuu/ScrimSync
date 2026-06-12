@@ -25,6 +25,24 @@ export function getTotalLP(tier: string, rank: string | null | undefined, lp: nu
   return base + rankBonus + lp
 }
 
+export function lpToTierInfo(totalLP: number): { tier: string; rank: string | null; lp: number } {
+  if (totalLP >= 3600) return { tier: 'CHALLENGER', rank: null, lp: totalLP - 3600 }
+  if (totalLP >= 3200) return { tier: 'GRANDMASTER', rank: null, lp: totalLP - 3200 }
+  if (totalLP >= 2800) return { tier: 'MASTER', rank: null, lp: totalLP - 2800 }
+  const brackets: Array<[number, string]> = [
+    [2400, 'DIAMOND'], [2000, 'EMERALD'], [1600, 'PLATINUM'],
+    [1200, 'GOLD'], [800, 'SILVER'], [400, 'BRONZE'], [0, 'IRON'],
+  ]
+  for (const [base, tier] of brackets) {
+    if (totalLP >= base) {
+      const rem = totalLP - base
+      const rank = rem >= 300 ? 'I' : rem >= 200 ? 'II' : rem >= 100 ? 'III' : 'IV'
+      return { tier, rank, lp: rem % 100 }
+    }
+  }
+  return { tier: 'IRON', rank: 'IV', lp: totalLP }
+}
+
 function tierImageUrl(tier: string): string {
   const t = tier.toLowerCase()
   return `/ranks/${t}.png`

@@ -21,7 +21,7 @@ import {
 import { buildPlayerAvailabilitySet } from '@/lib/availability'
 import { Player, Availability, Scrim, SaveStatus } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
-import { RankBadge, getTotalLP } from '@/components/lol/RankBadge'
+import { RankBadge, getTotalLP, lpToTierInfo } from '@/components/lol/RankBadge'
 
 function isScrimToday(scrim: Scrim, wStart: Date): boolean {
   const d = new Date(wStart)
@@ -409,8 +409,8 @@ export default function PlayerPage({ params }: PageProps) {
             {activeTab === 'dispo' && <>
               <PushNotifications playerId={player.id} />
 
-              {/* Toggle absent */}
-              <button
+              {/* Toggle absent — masqué si la semaine est entièrement passée */}
+              {(() => { const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7); return weekEnd > new Date() })() && <button
                 onClick={handleToggleAbsent}
                 disabled={absentLoading}
                 className={[
@@ -437,7 +437,7 @@ export default function PlayerPage({ params }: PageProps) {
                     isAbsent ? 'left-[18px]' : 'left-0.5',
                   ].join(' ')} />
                 </div>
-              </button>
+              </button>}
 
               {!isAbsent && (
                 <Card>
@@ -564,32 +564,9 @@ export default function PlayerPage({ params }: PageProps) {
                 ? Math.round(linkedPlayers.reduce((sum, p) => sum + getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!), 0) / linkedPlayers.length)
                 : null
 
-              const TIER_BASE_LOCAL: Record<string, number> = {
-                IRON: 0, BRONZE: 400, SILVER: 800, GOLD: 1200,
-                PLATINUM: 1600, EMERALD: 2000, DIAMOND: 2400,
-                MASTER: 2800, GRANDMASTER: 3200, CHALLENGER: 3600,
-              }
-              function lpToTier(totalLP: number): { tier: string; rank: string | null; lp: number } {
-                if (totalLP >= 3600) return { tier: 'CHALLENGER', rank: null, lp: totalLP - 3600 }
-                if (totalLP >= 3200) return { tier: 'GRANDMASTER', rank: null, lp: totalLP - 3200 }
-                if (totalLP >= 2800) return { tier: 'MASTER', rank: null, lp: totalLP - 2800 }
-                const brackets: Array<[number, string]> = [
-                  [2400, 'DIAMOND'], [2000, 'EMERALD'], [1600, 'PLATINUM'],
-                  [1200, 'GOLD'], [800, 'SILVER'], [400, 'BRONZE'], [0, 'IRON'],
-                ]
-                for (const [base, tier] of brackets) {
-                  if (totalLP >= base) {
-                    const rem = totalLP - base
-                    return { tier, rank: rem >= 300 ? 'I' : rem >= 200 ? 'II' : rem >= 100 ? 'III' : 'IV', lp: rem % 100 }
-                  }
-                }
-                return { tier: 'IRON', rank: 'IV', lp: totalLP }
-              }
-              void TIER_BASE_LOCAL
-
               return <>
               {linkedPlayers.length > 0 && avgTotalLP !== null && (() => {
-                const avg = lpToTier(avgTotalLP)
+                const avg = lpToTierInfo(avgTotalLP)
                 return (
                   <Card>
                     <CardHeader><CardTitle>Elo Équipe</CardTitle></CardHeader>
