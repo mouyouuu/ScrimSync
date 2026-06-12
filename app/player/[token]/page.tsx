@@ -521,7 +521,7 @@ export default function PlayerPage({ params }: PageProps) {
               )}
 
               <Card>
-                <CardHeader><CardTitle>Scrims confirmés</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Scrims</CardTitle></CardHeader>
                 {loadingData ? (
                   <div className="space-y-3">
                     <SkeletonScrimCard />

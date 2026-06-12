@@ -196,7 +196,12 @@ export default function AdminPage() {
 
   const teamPlayers = players.filter(p => p.role !== 'staff')
   const matrix = buildAvailabilityMatrix(availabilities, teamPlayers)
-  const perfectSlots = getPerfectSlots(matrix)
+  const perfectSlots = getPerfectSlots(matrix).filter(slot => {
+    const d = new Date(weekStart)
+    d.setDate(weekStart.getDate() + slot.day_of_week - 1)
+    d.setHours(slot.start_hour, 0, 0, 0)
+    return d > new Date()
+  })
 
   async function handleCreateScrim(data: ScrimFormData) {
     const res = await fetch('/api/scrims', {
