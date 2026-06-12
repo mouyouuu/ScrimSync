@@ -16,7 +16,7 @@ export function PlayerStatusList({ players, submissions, absenceIds = [] }: Play
   const pending = players.filter(p => !submittedIds.has(p.id) && !absentSet.has(p.id)).length
 
   return (
-    <div className="space-y-0">
+    <div className="divide-y divide-white/[0.05]">
       {players.map(player => {
         const hasSubmitted = submittedIds.has(player.id)
         const isAbsent = absentSet.has(player.id)
@@ -25,7 +25,7 @@ export function PlayerStatusList({ players, submissions, absenceIds = [] }: Play
         return (
           <div
             key={player.id}
-            className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0"
+            className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
           >
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-sm font-semibold text-text-primary">{player.name}</span>
@@ -63,9 +63,9 @@ export function PlayerStatusList({ players, submissions, absenceIds = [] }: Play
           </div>
         )
       })}
-      <div className="pt-2 text-xs text-text-muted">
+      <div className="pt-3 text-xs text-text-muted">
         {responded}/{players.length} ont répondu
-        {pending > 0 && <span className="ml-1">· {pending} en attente</span>}
+        {pending > 0 && <span className="ml-1 text-text-disabled">· {pending} en attente</span>}
       </div>
     </div>
   )

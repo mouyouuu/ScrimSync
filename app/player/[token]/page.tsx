@@ -296,7 +296,7 @@ export default function PlayerPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="border-b border-border-subtle bg-bg-surface/80 backdrop-blur-sm sticky top-0 z-10 pt-safe">
+      <header className="sticky top-0 z-10 pt-safe" style={{ background: 'rgba(9,9,11,0.82)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
@@ -414,10 +414,10 @@ export default function PlayerPage({ params }: PageProps) {
                 onClick={handleToggleAbsent}
                 disabled={absentLoading}
                 className={[
-                  'flex items-center gap-3 w-full rounded-xl border px-4 py-3 transition-all duration-200 text-left',
+                  'flex items-center gap-3 w-full rounded-2xl border px-4 py-3 transition-all duration-200 text-left',
                   isAbsent
-                    ? 'bg-warning/10 border-warning/30'
-                    : 'bg-bg-elevated border-border-subtle',
+                    ? 'bg-warning/[0.08] border-warning/20'
+                    : 'bg-white/[0.03] border-white/[0.07]',
                 ].join(' ')}
               >
                 <div className="flex-1">
@@ -504,7 +504,7 @@ export default function PlayerPage({ params }: PageProps) {
             {/* ── SCRIMS ── */}
             {activeTab === 'scrims' && <>
               {countdown && (
-                <div className="flex items-center gap-3 bg-accent/10 border border-accent/25 rounded-xl px-4 py-3 animate-fade-in">
+                <div className="flex items-center gap-3 bg-accent/[0.08] border border-accent/20 rounded-2xl px-4 py-3 animate-fade-in">
                   <span className="h-2 w-2 rounded-full bg-accent animate-pulse flex-shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-text-primary truncate">
@@ -594,29 +594,36 @@ export default function PlayerPage({ params }: PageProps) {
                   <Card>
                     <CardHeader><CardTitle>Elo Équipe</CardTitle></CardHeader>
                     <div className="space-y-3">
-                      <div className="rounded-xl overflow-hidden border border-border-subtle">
-                        <div className="flex items-center gap-4 px-4 py-3 bg-bg-elevated">
-                          <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
-                          <div className="ml-auto text-right">
-                            <p className="text-[11px] text-text-muted font-medium uppercase tracking-wider">Elo moyen</p>
-                            <p className="text-xs text-text-secondary mt-0.5">{linkedPlayers.length}/{teamPlayers.length} joueurs</p>
+                      {(() => {
+                        const tierLabel = avg.tier.charAt(0) + avg.tier.slice(1).toLowerCase()
+                        return (
+                          <div className="rounded-2xl overflow-hidden border border-white/[0.07]" style={{ background: 'linear-gradient(135deg, rgba(108,92,231,0.10) 0%, rgba(20,20,26,0.98) 60%)' }}>
+                            <div className="flex items-center gap-4 px-5 py-4">
+                              <RankBadge tier={avg.tier} rank={avg.rank} lp={avg.lp} size="lg" />
+                              <div>
+                                <p className="text-[20px] font-bold text-text-primary tracking-tight leading-none">
+                                  {tierLabel}{avg.rank ? ` ${avg.rank}` : ''}
+                                </p>
+                                <p className="text-sm text-text-muted mt-1">{avg.lp} LP · {linkedPlayers.length}/{teamPlayers.length} liés</p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="divide-y divide-border-subtle">
+                        )
+                      })()}
+                      <div className="space-y-1">
                         {linkedPlayers.map(p => {
                           const isUnranked = p.riot_tier === 'UNRANKED'
                           const gained = (!isUnranked && p.riot_lp_start != null)
                             ? getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start
                             : null
                           return (
-                            <div key={p.id} className="flex items-center gap-3 py-2.5">
+                            <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.03] transition-colors">
                               <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
                               <span className={['text-[13px] font-semibold flex-1 min-w-0 truncate', p.id === player?.id ? 'text-accent' : 'text-text-primary'].join(' ')}>
                                 {p.name}{p.id === player?.id ? ' (toi)' : ''}
                               </span>
                               {gained !== null && (
-                                <span className={['text-xs font-bold flex-shrink-0', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
+                                <span className={['text-xs font-bold flex-shrink-0 tabular-nums', gained >= 0 ? 'text-success' : 'text-danger'].join(' ')}>
                                   {gained >= 0 ? '+' : ''}{gained} LP
                                 </span>
                               )}
@@ -641,27 +648,27 @@ export default function PlayerPage({ params }: PageProps) {
                   />
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 gap-3 mb-5">
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Victoires</p>
+                    <div className="grid grid-cols-2 gap-2.5 mb-5">
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Victoires</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Défaites</p>
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Défaites</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Matchs</p>
+                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
+                        <p className="text-[36px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Matchs</p>
                       </div>
-                      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-                        <p className="text-[32px] font-bold text-accent tracking-tight leading-none">
+                      <div className="rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 text-center">
+                        <p className="text-[36px] font-bold text-accent tracking-tight leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wide">Win rate</p>
+                        <p className="text-[11px] text-accent/60 mt-2 font-medium uppercase tracking-wider">Win rate</p>
                       </div>
                     </div>
-                    <div className="space-y-2 border-t border-border-subtle pt-4">
+                    <div className="space-y-2 border-t border-white/[0.05] pt-4">
                       {stats.scrims.map((s) => (
                         <div key={s.id} className="flex items-center justify-between gap-2 text-sm">
                           <div className="flex items-center gap-2 min-w-0">

@@ -20,14 +20,14 @@ export function AdminAvailabilityMatrix({
 
   function getCellStyle(count: number): string {
     const base =
-      'h-9 w-full rounded-md border transition-all duration-150 text-[11px] font-semibold tabular-nums cursor-default'
+      'h-9 w-full rounded-lg border transition-all duration-150 text-[11px] font-semibold tabular-nums cursor-default'
     if (count === APP_CONFIG.expectedPlayers)
-      return `${base} bg-success/15 border-success/30 text-success`
+      return `${base} bg-success/12 border-success/25 text-success`
     if (count === APP_CONFIG.expectedPlayers - 1)
-      return `${base} bg-warning/10 border-warning/20 text-warning`
+      return `${base} bg-warning/8 border-warning/18 text-warning`
     if (count === 0)
-      return `${base} bg-bg-elevated border-border-subtle text-text-disabled`
-    return `${base} bg-bg-elevated border-border-subtle text-text-muted`
+      return `${base} bg-white/[0.02] border-white/[0.05] text-text-disabled`
+    return `${base} bg-white/[0.02] border-white/[0.05] text-text-muted`
   }
 
   return (
@@ -84,25 +84,25 @@ export function AdminAvailabilityMatrix({
 
       {/* Slot detail tooltip */}
       {tooltip && (
-        <div className="mt-4 rounded-lg border border-border-subtle bg-bg-elevated p-4 animate-fade-in">
+        <div className="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 animate-fade-in">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium text-text-primary">
-              {formatShortDayWithDate(weekStart, tooltip.day_of_week)} · {formatHour(tooltip.start_hour)} —{' '}
-              <span className={tooltip.count === APP_CONFIG.expectedPlayers ? 'text-success' : 'text-text-secondary'}>
-                {tooltip.count}/{APP_CONFIG.expectedPlayers} disponibles
+            <p className="text-sm font-semibold text-text-primary">
+              {formatShortDayWithDate(weekStart, tooltip.day_of_week)} · {formatHour(tooltip.start_hour)}{' '}
+              <span className={['font-normal', tooltip.count === APP_CONFIG.expectedPlayers ? 'text-success' : 'text-text-secondary'].join(' ')}>
+                — {tooltip.count}/{APP_CONFIG.expectedPlayers}
               </span>
             </p>
             <button
               onClick={() => setTooltip(null)}
-              className="text-text-muted hover:text-text-primary text-xs px-2 py-1 rounded hover:bg-bg-hover transition-colors"
+              className="text-text-muted hover:text-text-primary text-xs px-2 py-1 rounded-lg hover:bg-white/[0.06] transition-colors"
             >
               Fermer
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Disponibles</p>
-              <div className="flex flex-col gap-1">
+              <p className="text-[10px] text-text-muted mb-2 font-semibold uppercase tracking-wider">Disponibles</p>
+              <div className="flex flex-col gap-1.5">
                 {tooltip.availablePlayers.map(p => (
                   <div key={p.id} className="flex items-center gap-2 text-sm text-success">
                     <span className="h-1.5 w-1.5 rounded-full bg-success flex-shrink-0" />
@@ -115,8 +115,8 @@ export function AdminAvailabilityMatrix({
               </div>
             </div>
             <div>
-              <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Indisponibles</p>
-              <div className="flex flex-col gap-1">
+              <p className="text-[10px] text-text-muted mb-2 font-semibold uppercase tracking-wider">Indisponibles</p>
+              <div className="flex flex-col gap-1.5">
                 {tooltip.missingPlayers.map(p => (
                   <div key={p.id} className="flex items-center gap-2 text-sm text-text-muted">
                     <span className="h-1.5 w-1.5 rounded-full bg-text-disabled flex-shrink-0" />

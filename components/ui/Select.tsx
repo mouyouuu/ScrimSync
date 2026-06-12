@@ -23,12 +23,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'h-9 w-full rounded-lg border bg-bg-elevated px-3 text-sm text-text-primary',
+            'h-11 w-full rounded-xl border bg-white/[0.04] px-3.5 text-sm text-text-primary',
             'transition-colors duration-150 outline-none appearance-none cursor-pointer',
-            'focus:border-accent focus:ring-1 focus:ring-accent/30',
+            'focus:border-accent focus:ring-1 focus:ring-accent/20',
             error
-              ? 'border-danger focus:border-danger focus:ring-danger/30'
-              : 'border-border hover:border-border-strong',
+              ? 'border-danger/50 focus:border-danger focus:ring-danger/20'
+              : 'border-white/[0.08] hover:border-white/[0.14]',
             className
           )}
           {...props}

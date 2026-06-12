@@ -32,7 +32,7 @@ export function ResultModal({ scrim, weekStart, open, onClose, onSubmit }: Resul
     <Modal open={open} onClose={onClose} title="Résultat du scrim" size="sm">
       <div className="space-y-4">
         {/* Info scrim */}
-        <div className="rounded-lg bg-bg-elevated border border-border-subtle px-3 py-2.5">
+        <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] px-4 py-3">
           <p className="text-xs text-text-muted">{formatScrimDate(weekStart, scrim.day_of_week, scrim.start_hour)}</p>
           <p className="text-sm font-semibold text-text-primary mt-0.5">vs {scrim.opponent_name}</p>
         </div>
@@ -44,10 +44,10 @@ export function ResultModal({ scrim, weekStart, open, onClose, onSubmit }: Resul
             <button
               onClick={() => setResult('win')}
               className={[
-                'flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all',
+                'flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all active:scale-[0.97]',
                 result === 'win'
-                  ? 'bg-success/15 border-success/40 text-success'
-                  : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-success/30',
+                  ? 'bg-success/15 border-success/35 text-success'
+                  : 'bg-white/[0.04] border-white/[0.08] text-text-muted hover:border-success/25 hover:text-success/70',
               ].join(' ')}
             >
               ✓ Victoire
@@ -55,10 +55,10 @@ export function ResultModal({ scrim, weekStart, open, onClose, onSubmit }: Resul
             <button
               onClick={() => setResult('loss')}
               className={[
-                'flex-1 py-2.5 rounded-lg border text-sm font-semibold transition-all',
+                'flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all active:scale-[0.97]',
                 result === 'loss'
-                  ? 'bg-danger/15 border-danger/40 text-danger'
-                  : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-danger/30',
+                  ? 'bg-danger/15 border-danger/35 text-danger'
+                  : 'bg-white/[0.04] border-white/[0.08] text-text-muted hover:border-danger/25 hover:text-danger/70',
               ].join(' ')}
             >
               ✗ Défaite
@@ -74,11 +74,11 @@ export function ResultModal({ scrim, weekStart, open, onClose, onSubmit }: Resul
             placeholder="ex : 2-1, 3-0..."
             value={score}
             onChange={e => setScore(e.target.value)}
-            className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
           />
         </div>
 
-        {/* Description / Elo */}
+        {/* Notes */}
         <div>
           <label className="text-xs font-medium text-text-secondary block mb-1.5">Description (optionnel)</label>
           <textarea
@@ -86,7 +86,7 @@ export function ResultModal({ scrim, weekStart, open, onClose, onSubmit }: Resul
             value={notes}
             onChange={e => setNotes(e.target.value)}
             rows={2}
-            className="w-full rounded-lg border border-border-subtle bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent resize-none"
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent resize-none"
           />
         </div>
 

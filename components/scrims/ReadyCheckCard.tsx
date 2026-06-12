@@ -53,7 +53,7 @@ export function ReadyCheckCard({ scrimId, opponentName, startHour, playerId, pla
   /* ── VUE ADMIN ── */
   if (isAdmin) {
     return (
-      <div className="bg-bg-elevated border border-border-subtle rounded-xl px-4 py-3">
+      <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide">Ready Check</p>
           <div className="flex items-center gap-2 text-xs font-medium">
@@ -91,7 +91,7 @@ export function ReadyCheckCard({ scrimId, opponentName, startHour, playerId, pla
 
   /* ── VUE JOUEUR ── */
   return (
-    <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 space-y-3 animate-fade-in">
+    <div className="bg-accent/[0.05] border border-accent/20 rounded-2xl p-4 space-y-3 animate-fade-in">
       <div>
         <p className="text-[11px] font-semibold text-accent uppercase tracking-wide mb-1">Ready Check</p>
         <p className="text-sm font-semibold text-text-primary">
@@ -128,7 +128,7 @@ export function ReadyCheckCard({ scrimId, opponentName, startHour, playerId, pla
           <button
             onClick={() => handleConfirm('confirmed')}
             disabled={loading}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-success/15 border border-success/30 text-success text-sm font-semibold transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-success/12 border border-success/25 text-success text-sm font-semibold transition-all active:scale-[0.97]"
           >
             ✓ Je confirme ma présence
           </button>
@@ -136,14 +136,14 @@ export function ReadyCheckCard({ scrimId, opponentName, startHour, playerId, pla
             <button
               onClick={() => handleConfirm('late')}
               disabled={loading}
-              className="flex-1 py-2 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm font-medium transition-all active:scale-95"
+              className="flex-1 py-2 rounded-xl bg-warning/[0.08] border border-warning/20 text-warning text-sm font-medium transition-all active:scale-[0.97]"
             >
               ⏰ En retard
             </button>
             <button
               onClick={() => handleConfirm('declined')}
               disabled={loading}
-              className="flex-1 py-2 rounded-lg bg-danger/10 border border-danger/30 text-danger text-sm font-medium transition-all active:scale-95"
+              className="flex-1 py-2 rounded-xl bg-danger/[0.08] border border-danger/20 text-danger text-sm font-medium transition-all active:scale-[0.97]"
             >
               ✗ Je ne peux plus
             </button>

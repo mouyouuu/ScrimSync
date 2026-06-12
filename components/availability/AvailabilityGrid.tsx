@@ -130,15 +130,15 @@ export function AvailabilityGrid({
                   aria-label={`${formatShortDayWithDate(weekStart, day)} ${formatHour(hour)}`}
                   aria-pressed={isSelected}
                   className={[
-                    'h-9 w-full rounded-md border transition-all duration-150',
+                    'h-9 w-full rounded-lg border transition-all duration-150',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-bg',
                     disabled ? 'cursor-default opacity-60' : 'cursor-pointer',
                     animating.has(key)
                       ? (isSelected ? 'animate-slot-pop' : 'animate-slot-pop-out')
                       : '',
                     isSelected
-                      ? 'bg-accent/20 border-accent/50 shadow-[0_0_0_1px_rgba(99,102,241,0.3)]'
-                      : 'bg-bg-elevated border-border-subtle hover:border-border hover:bg-bg-hover',
+                      ? 'bg-accent/15 border-accent/40 shadow-[0_0_0_1px_rgba(108,92,231,0.2)]'
+                      : 'bg-white/[0.03] border-white/[0.07] hover:border-white/[0.14] hover:bg-white/[0.06]',
                   ].join(' ')}
                 >
                   {isSelected && (

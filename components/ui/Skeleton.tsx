@@ -1,7 +1,7 @@
 import { APP_CONFIG } from '@/config/app'
 
 function Sk({ className = '' }: { className?: string }) {
-  return <div className={`animate-shimmer rounded-md ${className}`} />
+  return <div className={`animate-shimmer rounded-lg ${className}`} />
 }
 
 export function SkeletonAvailabilityGrid() {
@@ -25,11 +25,11 @@ export function SkeletonAvailabilityGrid() {
 
 export function SkeletonScrimCard() {
   return (
-    <div className="border border-border-subtle rounded-xl p-4 space-y-2.5">
+    <div className="border border-white/[0.07] rounded-2xl p-4 space-y-2.5">
       <div className="flex items-center gap-2">
         <Sk className="h-2 w-2 rounded-full flex-shrink-0" />
         <Sk className="h-3 w-28" />
-        <Sk className="h-4 w-14 rounded-md" />
+        <Sk className="h-4 w-14 rounded-full" />
       </div>
       <Sk className="h-5 w-44" />
       <Sk className="h-3 w-20" />
@@ -39,11 +39,11 @@ export function SkeletonScrimCard() {
 
 export function SkeletonStats() {
   return (
-    <div className="flex items-center gap-6 flex-wrap py-1">
+    <div className="grid grid-cols-2 gap-2.5">
       {[1, 2, 3, 4].map(i => (
-        <div key={i} className="text-center space-y-1.5">
-          <Sk className="h-8 w-10 mx-auto" />
-          <Sk className="h-3 w-14" />
+        <div key={i} className="rounded-2xl border border-white/[0.07] p-4 space-y-2">
+          <Sk className="h-9 w-12 mx-auto" />
+          <Sk className="h-3 w-16 mx-auto" />
         </div>
       ))}
     </div>
@@ -53,23 +53,20 @@ export function SkeletonStats() {
 export function SkeletonAdminContent() {
   return (
     <div className="space-y-6">
-      {/* Créneaux parfaits */}
-      <div className="border border-border-subtle rounded-2xl p-4 space-y-3">
+      <div className="border border-white/[0.07] rounded-3xl p-5 space-y-3">
         <Sk className="h-5 w-36" />
         {[1, 2, 3].map(i => (
           <div key={i} className="flex items-center justify-between py-1">
             <Sk className="h-4 w-44" />
-            <Sk className="h-8 w-28 rounded-lg" />
+            <Sk className="h-8 w-28 rounded-xl" />
           </div>
         ))}
       </div>
-      {/* Scrims */}
-      <div className="border border-border-subtle rounded-2xl p-4 space-y-3">
+      <div className="border border-white/[0.07] rounded-3xl p-5 space-y-3">
         <Sk className="h-5 w-28" />
         <SkeletonScrimCard />
       </div>
-      {/* Réponses joueurs */}
-      <div className="border border-border-subtle rounded-2xl p-4 space-y-3">
+      <div className="border border-white/[0.07] rounded-3xl p-5 space-y-3">
         <Sk className="h-5 w-24" />
         {[1, 2, 3, 4, 5].map(i => (
           <div key={i} className="flex items-center justify-between py-0.5">
@@ -78,8 +75,7 @@ export function SkeletonAdminContent() {
           </div>
         ))}
       </div>
-      {/* Matrice dispo */}
-      <div className="border border-border-subtle rounded-2xl p-4">
+      <div className="border border-white/[0.07] rounded-3xl p-5">
         <Sk className="h-5 w-40 mb-4" />
         <SkeletonAvailabilityGrid />
       </div>
