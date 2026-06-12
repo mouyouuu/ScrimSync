@@ -532,7 +532,7 @@ export default function PlayerPage({ params }: PageProps) {
                           weekStart={weekStart}
                           onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
                         />
-                        {isScrimToday(scrim, weekStart) && (
+                        {isScrimToday(scrim, weekStart) && scrim.status === 'confirmed' && (
                           <ReadyCheckCard
                             scrimId={scrim.id}
                             opponentName={scrim.opponent_name}

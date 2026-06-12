@@ -60,7 +60,7 @@ export function ScrimCard({ scrim, weekStart, onEdit, onDelete, onResultChange, 
                   </button>
                 )}
               </div>
-            ) : onResultChange && status !== 'cancelled' ? (
+            ) : onResultChange && status === 'confirmed' ? (
               <button
                 onClick={() => setModalOpen(true)}
                 className="mt-2 text-xs font-medium px-2.5 py-1 rounded-lg bg-bg-elevated border border-border-subtle text-text-muted hover:text-text-primary hover:border-border transition-colors"

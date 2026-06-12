@@ -194,7 +194,8 @@ export default function AdminPage() {
     }).catch(() => {})
   }, [])
 
-  const matrix = buildAvailabilityMatrix(availabilities, players)
+  const teamPlayers = players.filter(p => p.role !== 'staff')
+  const matrix = buildAvailabilityMatrix(availabilities, teamPlayers)
   const perfectSlots = getPerfectSlots(matrix)
 
   async function handleCreateScrim(data: ScrimFormData) {
@@ -487,7 +488,7 @@ export default function AdminPage() {
                             onDelete={() => setDeleteConfirm(scrim.id)}
                             onResultChange={(result, score, notes) => handleResultChange(scrim.id, result as 'win' | 'loss', score, notes ?? '')}
                           />
-                          {isScrimToday(scrim, weekStart) && (
+                          {isScrimToday(scrim, weekStart) && scrim.status === 'confirmed' && (
                             <ReadyCheckCard
                               scrimId={scrim.id}
                               opponentName={scrim.opponent_name}
@@ -505,7 +506,6 @@ export default function AdminPage() {
 
               {/* ── ÉQUIPE ── */}
               {activeTab === 'equipe' && (() => {
-                const teamPlayers = players.filter(p => p.role !== 'staff')
                 const linkedPlayers = teamPlayers.filter(p => p.riot_tier && p.riot_lp != null)
                 const avgTotalLP = linkedPlayers.length > 0
                   ? Math.round(linkedPlayers.reduce((sum, p) => sum + getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!), 0) / linkedPlayers.length)

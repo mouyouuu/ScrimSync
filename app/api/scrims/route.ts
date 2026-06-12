@@ -54,16 +54,18 @@ export async function POST(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Notify all subscribers
-  fetch(`${request.nextUrl.origin}/api/push/notify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title: '📅 Nouveau scrim !',
-      body: `vs ${data.opponent_name}`,
-      url: '/',
-    }),
-  }).catch(() => {})
+  // Notify only when confirmed
+  if (data.status === 'confirmed') {
+    fetch(`${request.nextUrl.origin}/api/push/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: '📅 Nouveau scrim !',
+        body: `vs ${data.opponent_name}`,
+        url: '/',
+      }),
+    }).catch(() => {})
+  }
 
   return NextResponse.json(data, { status: 201 })
 }
