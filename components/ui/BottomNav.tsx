@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 export interface BottomNavTab {
   key: string
   label: string
@@ -11,8 +13,30 @@ export function BottomNav({ tabs, active, onChange }: {
   active: string
   onChange: (key: string) => void
 }) {
+  const [keyboardOpen, setKeyboardOpen] = useState(false)
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    function onResize() {
+      // Le clavier est ouvert si la hauteur visuelle est nettement inférieure à la fenêtre
+      setKeyboardOpen(vv!.height < window.innerHeight - 80)
+    }
+
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
+  }, [])
+
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20 border-t border-white/[0.06] pb-safe" style={{ background: 'rgba(12,12,15,0.88)', backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)' }}>
+    <nav
+      className={[
+        'fixed bottom-0 inset-x-0 z-20 border-t border-white/[0.06] pb-safe',
+        'transition-transform duration-200 ease-in-out',
+        keyboardOpen ? 'translate-y-full' : 'translate-y-0',
+      ].join(' ')}
+      style={{ background: 'rgba(12,12,15,0.88)', backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)' }}
+    >
       <div className="flex h-16">
         {tabs.map(tab => {
           const isActive = tab.key === active
