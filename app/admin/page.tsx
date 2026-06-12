@@ -457,7 +457,7 @@ export default function AdminPage() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle>Scrims confirmés</CardTitle>
+                      <CardTitle>Scrims</CardTitle>
                       <div className="flex gap-2">
                         <Button size="sm" variant={copied ? 'success' : 'secondary'} onClick={copyDiscordMessage}>
                           <span className="hidden sm:inline">{copied ? 'Copié !' : 'Copier message Discord'}</span>

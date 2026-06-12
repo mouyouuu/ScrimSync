@@ -19,6 +19,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
   const startYRef = useRef(0)
   const isDraggingRef = useRef(false)
   const sheetRef = useRef<HTMLDivElement>(null)
+  const handleRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -40,24 +41,29 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [open, onClose])
 
-  // Drag to dismiss
+  // Drag-to-dismiss : écoute uniquement la poignée pour démarrer, puis suit sur document
   useEffect(() => {
-    const sheet = sheetRef.current
-    if (!sheet) return
+    const handle = handleRef.current
+    if (!handle) return
 
     function onTouchStart(e: TouchEvent) {
       startYRef.current = e.touches[0].clientY
+      dragYRef.current = 0
       isDraggingRef.current = true
     }
+
     function onTouchMove(e: TouchEvent) {
       if (!isDraggingRef.current) return
       const dy = Math.max(0, e.touches[0].clientY - startYRef.current)
       dragYRef.current = dy
       setDragY(dy)
+      if (dy > 0) e.preventDefault() // bloque le scroll arrière-plan
     }
+
     function onTouchEnd() {
+      if (!isDraggingRef.current) return
       isDraggingRef.current = false
-      if (dragYRef.current > 120) {
+      if (dragYRef.current > 100) {
         onClose()
       } else {
         setDragY(0)
@@ -65,13 +71,15 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       }
     }
 
-    sheet.addEventListener('touchstart', onTouchStart, { passive: true })
-    sheet.addEventListener('touchmove', onTouchMove, { passive: true })
-    sheet.addEventListener('touchend', onTouchEnd)
+    handle.addEventListener('touchstart', onTouchStart, { passive: true })
+    // move/end sur document pour capturer le glissement hors de la poignée
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+
     return () => {
-      sheet.removeEventListener('touchstart', onTouchStart)
-      sheet.removeEventListener('touchmove', onTouchMove)
-      sheet.removeEventListener('touchend', onTouchEnd)
+      handle.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
     }
   }, [onClose])
 
@@ -101,10 +109,15 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
         role="dialog"
         aria-modal="true"
       >
-        {/* Poignée de glissement (mobile) */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-border" />
+        {/* Poignée — zone de drag (mobile uniquement) */}
+        <div
+          ref={handleRef}
+          className="flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing touch-none"
+          aria-hidden="true"
+        >
+          <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
+
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
           <h2 className="text-base font-semibold text-text-primary">{title}</h2>
           <button
