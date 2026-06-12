@@ -14,34 +14,39 @@ interface ModalProps {
 export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
   const [mounted, setMounted] = useState(open)
   const [visible, setVisible] = useState(false)
+  // 'idle' | 'dragging' | 'snapping' | 'dismissing'
+  const [dragPhase, setDragPhase] = useState<'idle' | 'dragging' | 'snapping' | 'dismissing'>('idle')
   const [dragY, setDragY] = useState(0)
   const dragYRef = useRef(0)
   const startYRef = useRef(0)
-  const isDraggingRef = useRef(false)
-  const sheetRef = useRef<HTMLDivElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (open) {
       setMounted(true)
+      setDragPhase('idle')
+      setDragY(0)
+      dragYRef.current = 0
       const t = setTimeout(() => setVisible(true), 10)
       return () => clearTimeout(t)
     } else {
       setVisible(false)
-      const t = setTimeout(() => { setMounted(false); setDragY(0); dragYRef.current = 0 }, 300)
+      const t = setTimeout(() => setMounted(false), 300)
       return () => clearTimeout(t)
     }
   }, [open])
 
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current() }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
-  }, [open, onClose])
+  }, [open])
 
-  // Drag-to-dismiss : écoute uniquement la poignée pour démarrer, puis suit sur document
+  // Drag-to-dismiss — attaché à la poignée uniquement
   useEffect(() => {
     const handle = handleRef.current
     if (!handle) return
@@ -49,30 +54,35 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
     function onTouchStart(e: TouchEvent) {
       startYRef.current = e.touches[0].clientY
       dragYRef.current = 0
-      isDraggingRef.current = true
+      setDragPhase('dragging')
+      setDragY(0)
     }
 
     function onTouchMove(e: TouchEvent) {
-      if (!isDraggingRef.current) return
+      if (dragYRef.current === 0 && e.touches[0].clientY <= startYRef.current) return
       const dy = Math.max(0, e.touches[0].clientY - startYRef.current)
       dragYRef.current = dy
       setDragY(dy)
-      if (dy > 0) e.preventDefault() // bloque le scroll arrière-plan
+      e.preventDefault()
     }
 
     function onTouchEnd() {
-      if (!isDraggingRef.current) return
-      isDraggingRef.current = false
-      if (dragYRef.current > 100) {
-        onClose()
+      const dy = dragYRef.current
+      if (dy > 100) {
+        // Animer vers le bas puis fermer
+        setDragPhase('dismissing')
+        setDragY(window.innerHeight)
+        setTimeout(() => onCloseRef.current(), 260)
       } else {
+        // Snap back
+        setDragPhase('snapping')
         setDragY(0)
         dragYRef.current = 0
+        setTimeout(() => setDragPhase('idle'), 300)
       }
     }
 
     handle.addEventListener('touchstart', onTouchStart, { passive: true })
-    // move/end sur document pour capturer le glissement hors de la poignée
     document.addEventListener('touchmove', onTouchMove, { passive: false })
     document.addEventListener('touchend', onTouchEnd)
 
@@ -81,47 +91,60 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       document.removeEventListener('touchmove', onTouchMove)
       document.removeEventListener('touchend', onTouchEnd)
     }
-  }, [onClose, mounted])
+  }, [mounted])
 
   if (!mounted) return null
 
   const sizes = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' }
+
+  // Style inline de la sheet selon la phase
+  let sheetStyle: React.CSSProperties | undefined
+  if (dragPhase === 'dragging') {
+    sheetStyle = { transform: `translateY(${dragY}px)`, transition: 'none' }
+  } else if (dragPhase === 'snapping') {
+    sheetStyle = { transform: 'translateY(0)', transition: 'transform 300ms cubic-bezier(0.32, 0.72, 0, 1)' }
+  } else if (dragPhase === 'dismissing') {
+    sheetStyle = { transform: `translateY(${dragY}px)`, transition: 'transform 260ms cubic-bezier(0.32, 0.72, 0, 1)' }
+  }
 
   return (
     <div
       className={cn(
         'fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4',
         'transition-colors duration-300',
-        visible ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'
+        visible && dragPhase !== 'dismissing' ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'
       )}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      onClick={e => { if (e.target === e.currentTarget) onCloseRef.current() }}
     >
       <div
-        ref={sheetRef}
         className={cn(
           'w-full bg-bg-surface border border-white/[0.07] shadow-glass',
           'rounded-t-3xl sm:rounded-3xl',
-          'transition-transform duration-300 ease-out',
           sizes[size],
-          visible ? 'translate-y-0' : 'translate-y-full sm:translate-y-4'
+          // La classe CSS de transition ne s'applique qu'en mode idle (open/close normal)
+          dragPhase === 'idle' ? 'transition-transform duration-300 ease-out' : '',
+          dragPhase === 'idle' && visible ? 'translate-y-0' : dragPhase === 'idle' ? 'translate-y-full sm:translate-y-4' : ''
         )}
-        style={dragY > 0 ? { transform: `translateY(${dragY}px)`, transition: 'none' } : undefined}
+        style={sheetStyle}
         role="dialog"
         aria-modal="true"
       >
         {/* Poignée — zone de drag (mobile uniquement) */}
         <div
           ref={handleRef}
-          className="flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing touch-none"
+          className="flex justify-center pt-3 pb-2 sm:hidden touch-none select-none"
           aria-hidden="true"
         >
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div className={cn(
+            'w-10 h-1 rounded-full transition-colors duration-150',
+            dragPhase === 'dragging' ? 'bg-white/40' : 'bg-white/20'
+          )} />
         </div>
 
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
           <h2 className="text-base font-semibold text-text-primary">{title}</h2>
           <button
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
             className="rounded-lg p-1.5 text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors"
             aria-label="Fermer"
           >
