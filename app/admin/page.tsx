@@ -16,6 +16,7 @@ import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { SkeletonAdminContent, SkeletonAdminStats } from '@/components/ui/Skeleton'
+import { haptic } from '@/lib/haptic'
 import {
   getCurrentWeekStart,
   formatWeekStart,
@@ -186,6 +187,7 @@ export default function AdminPage() {
   })
 
   async function handleCreateScrim(data: ScrimFormData) {
+    haptic(14)
     const res = await fetch('/api/scrims', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -195,6 +197,7 @@ export default function AdminPage() {
   }
 
   async function handleUpdateScrim(id: string, data: ScrimFormData) {
+    haptic(10)
     const res = await fetch(`/api/scrims/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -281,6 +284,7 @@ export default function AdminPage() {
   async function handleSavePlayerName(id: string) {
     const name = playerEdits[id]?.trim()
     if (!name) return
+    haptic(8)
     setPlayerSaving(id)
     await fetch(`/api/players/${id}`, {
       method: 'PUT',

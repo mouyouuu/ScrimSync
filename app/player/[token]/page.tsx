@@ -22,6 +22,7 @@ import { buildPlayerAvailabilitySet } from '@/lib/availability'
 import { Player, Availability, Scrim, SaveStatus } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
 import { RankBadge, getTotalLP, lpToTierInfo } from '@/components/lol/RankBadge'
+import { haptic } from '@/lib/haptic'
 
 function isScrimToday(scrim: Scrim, wStart: Date): boolean {
   const d = new Date(wStart)
@@ -202,6 +203,7 @@ export default function PlayerPage({ params }: PageProps) {
 
   async function handleSave() {
     if (!player) return
+    haptic(10)
     setSaveStatus('saving')
     const slots = Array.from(selected).map(key => {
       const [day, hour] = key.split('-').map(Number)
@@ -226,6 +228,7 @@ export default function PlayerPage({ params }: PageProps) {
 
   async function handleToggleAbsent() {
     if (!player) return
+    haptic(10)
     setAbsentLoading(true)
     const next = !isAbsent
     await fetch('/api/availability/absent', {

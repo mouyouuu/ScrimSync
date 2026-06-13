@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Player } from '@/types'
+import { haptic } from '@/lib/haptic'
 
 type RCStatus = 'confirmed' | 'late' | 'declined'
 
@@ -40,6 +41,7 @@ export function ReadyCheckCard({ scrimId, opponentName, startHour, playerId, pla
 
   async function handleConfirm(status: RCStatus) {
     if (!playerId) return
+    haptic(status === 'confirmed' ? 14 : 8)
     setLoading(true)
     await fetch(`/api/scrims/${scrimId}/confirmation`, {
       method: 'POST',
