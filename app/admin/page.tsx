@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
-import { SkeletonAdminContent, SkeletonStats } from '@/components/ui/Skeleton'
+import { SkeletonAdminContent, SkeletonAdminStats } from '@/components/ui/Skeleton'
 import {
   getCurrentWeekStart,
   formatWeekStart,
@@ -703,7 +703,7 @@ export default function AdminPage() {
                 <Card>
                   <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
                   {!stats ? (
-                    <SkeletonStats />
+                    <SkeletonAdminStats />
                   ) : stats.total === 0 ? (
                     <EmptyState
                       variant="stats"
