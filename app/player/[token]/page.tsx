@@ -630,19 +630,19 @@ export default function PlayerPage({ params }: PageProps) {
                   <>
                     <div className="grid grid-cols-2 gap-2.5 mb-5">
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-success tracking-tight leading-none">{stats.wins}</p>
+                        <p className="text-[36px] font-bold text-success tracking-tighter leading-none">{stats.wins}</p>
                         <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Victoires</p>
                       </div>
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-danger tracking-tight leading-none">{stats.losses}</p>
+                        <p className="text-[36px] font-bold text-danger tracking-tighter leading-none">{stats.losses}</p>
                         <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Défaites</p>
                       </div>
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-text-primary tracking-tight leading-none">{stats.total}</p>
+                        <p className="text-[36px] font-bold text-text-primary tracking-tighter leading-none">{stats.total}</p>
                         <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Matchs</p>
                       </div>
                       <div className="rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 text-center">
-                        <p className="text-[36px] font-bold text-accent tracking-tight leading-none">
+                        <p className="text-[36px] font-bold text-accent tracking-tighter leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
                         <p className="text-[11px] text-accent/60 mt-2 font-medium uppercase tracking-wider">Win rate</p>

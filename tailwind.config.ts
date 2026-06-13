@@ -58,6 +58,27 @@ const config: Config = {
         sans: ['var(--font-geist-sans)', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'JetBrains Mono', 'monospace'],
       },
+      fontSize: {
+        // Taille + line-height + letter-spacing baked-in par palier
+        'xs':   ['11px', { lineHeight: '1.45', letterSpacing: '0.01em'   }],
+        'sm':   ['13px', { lineHeight: '1.5',  letterSpacing: '0em'      }],
+        'base': ['15px', { lineHeight: '1.6',  letterSpacing: '-0.006em' }],
+        'lg':   ['17px', { lineHeight: '1.5',  letterSpacing: '-0.012em' }],
+        'xl':   ['20px', { lineHeight: '1.3',  letterSpacing: '-0.02em'  }],
+        '2xl':  ['24px', { lineHeight: '1.25', letterSpacing: '-0.025em' }],
+        '3xl':  ['30px', { lineHeight: '1.15', letterSpacing: '-0.03em'  }],
+        '4xl':  ['36px', { lineHeight: '1.1',  letterSpacing: '-0.04em'  }],
+        '5xl':  ['48px', { lineHeight: '1.05', letterSpacing: '-0.04em'  }],
+      },
+      letterSpacing: {
+        tighter: '-0.04em',
+        tight:   '-0.025em',
+        snug:    '-0.015em',
+        normal:  '0em',
+        wide:    '0.02em',
+        wider:   '0.05em',
+        widest:  '0.08em',
+      },
       borderRadius: {
         'sm': '6px',
         DEFAULT: '10px',

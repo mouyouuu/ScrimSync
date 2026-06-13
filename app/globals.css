@@ -23,8 +23,15 @@
     background-color: #09090b;
     background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(108,92,231,0.08) 0%, transparent 60%);
     color: #fafafa;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv01" 1;
+    font-optical-sizing: auto;
     overscroll-behavior-y: none;
+  }
+
+  /* Tracking négatif automatique sur tous les titres structurels */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.025em;
+    line-height: 1.2;
   }
 
   /* Scrollbar styling */
