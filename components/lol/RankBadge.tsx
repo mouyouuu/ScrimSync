@@ -1,15 +1,15 @@
-const TIER_META: Record<string, { color: string; label: string }> = {
-  IRON:         { color: '#9CA3AF', label: 'Fer' },
-  BRONZE:       { color: '#CD7F32', label: 'Bronze' },
-  SILVER:       { color: '#8AA0B0', label: 'Argent' },
-  GOLD:         { color: '#B8892A', label: 'Or' },
-  PLATINUM:     { color: '#0891B2', label: 'Platine' },
-  EMERALD:      { color: '#059669', label: 'Émeraude' },
-  DIAMOND:      { color: '#5B8DEF', label: 'Diamant' },
-  MASTER:       { color: '#9D48E0', label: 'Master' },
-  GRANDMASTER:  { color: '#C0392B', label: 'Grandmaster' },
-  CHALLENGER:   { color: '#E9B84A', label: 'Challenger' },
-  UNRANKED:     { color: '#6B7280', label: 'Unranked' },
+const TIER_META: Record<string, { color: string; bg: string; label: string }> = {
+  IRON:         { color: '#9CA3AF', bg: 'rgba(156,163,175,0.10)', label: 'Fer' },
+  BRONZE:       { color: '#CD7F32', bg: 'rgba(205,127,50,0.12)',  label: 'Bronze' },
+  SILVER:       { color: '#8AA0B0', bg: 'rgba(138,160,176,0.10)', label: 'Argent' },
+  GOLD:         { color: '#C9A227', bg: 'rgba(201,162,39,0.12)',  label: 'Or' },
+  PLATINUM:     { color: '#0EA5E9', bg: 'rgba(14,165,233,0.10)',  label: 'Platine' },
+  EMERALD:      { color: '#10B981', bg: 'rgba(16,185,129,0.10)',  label: 'Émeraude' },
+  DIAMOND:      { color: '#6EA8FE', bg: 'rgba(110,168,254,0.10)', label: 'Diamant' },
+  MASTER:       { color: '#A855F7', bg: 'rgba(168,85,247,0.12)',  label: 'Master' },
+  GRANDMASTER:  { color: '#EF4444', bg: 'rgba(239,68,68,0.10)',   label: 'Grandmaster' },
+  CHALLENGER:   { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  label: 'Challenger' },
+  UNRANKED:     { color: '#6B7280', bg: 'rgba(107,114,128,0.08)', label: 'Unranked' },
 }
 
 const TIER_BASE: Record<string, number> = {
@@ -56,9 +56,10 @@ interface RankBadgeProps {
   losses?: number | null
   size?: 'sm' | 'md' | 'lg'
   showRecord?: boolean
+  chip?: boolean
 }
 
-export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecord }: RankBadgeProps) {
+export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecord, chip }: RankBadgeProps) {
   const key = tier?.toUpperCase() ?? 'UNRANKED'
   const meta = TIER_META[key] ?? TIER_META['UNRANKED']
   const isApex = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(key)
@@ -73,8 +74,8 @@ export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecor
       ? `${meta.label} · ${lp ?? 0} LP`
       : `${meta.label} ${rank ?? ''} · ${lp ?? 0} LP`
 
-  return (
-    <div className="flex items-center gap-2">
+  const inner = (
+    <>
       <div className="flex-shrink-0" style={{ width: imgSize, height: imgSize }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -98,6 +99,22 @@ export function RankBadge({ tier, rank, lp, wins, losses, size = 'md', showRecor
           </p>
         )}
       </div>
-    </div>
+    </>
   )
+
+  if (chip) {
+    return (
+      <div
+        className="inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5"
+        style={{
+          background: meta.bg,
+          border: `1px solid ${meta.color}28`,
+        }}
+      >
+        {inner}
+      </div>
+    )
+  }
+
+  return <div className="flex items-center gap-2">{inner}</div>
 }

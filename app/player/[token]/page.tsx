@@ -8,6 +8,7 @@ import { ScrimCard } from '@/components/scrims/ScrimCard'
 import { InstallPWAHint } from '@/components/pwa/InstallPWAHint'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { NotifBanner } from '@/components/pwa/NotifBanner'
+import { WinRateDonut } from '@/components/ui/WinRateDonut'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { SkeletonAvailabilityGrid, SkeletonScrimCard, SkeletonStats } from '@/components/ui/Skeleton'
@@ -601,7 +602,7 @@ export default function PlayerPage({ params }: PageProps) {
                             : null
                           return (
                             <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.03] transition-colors">
-                              <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" />
+                              <RankBadge tier={p.riot_tier!} rank={p.riot_rank} lp={p.riot_lp} size="sm" chip />
                               <span className={['text-[13px] font-semibold flex-1 min-w-0 truncate', p.id === player?.id ? 'text-accent' : 'text-text-primary'].join(' ')}>
                                 {p.name}{p.id === player?.id ? ' (toi)' : ''}
                               </span>
@@ -631,24 +632,30 @@ export default function PlayerPage({ params }: PageProps) {
                   />
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 gap-2.5 mb-5">
-                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-success tracking-tighter leading-none">{stats.wins}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Victoires</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-danger tracking-tighter leading-none">{stats.losses}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Défaites</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold text-text-primary tracking-tighter leading-none">{stats.total}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Matchs</p>
-                      </div>
-                      <div className="rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 text-center">
-                        <p className="text-[36px] font-bold text-accent tracking-tighter leading-none">
-                          {Math.round((stats.wins / stats.total) * 100)}%
-                        </p>
-                        <p className="text-[11px] text-accent/60 mt-2 font-medium uppercase tracking-wider">Win rate</p>
+                    <div className="flex items-center gap-5 py-2 mb-5">
+                      <WinRateDonut wins={stats.wins} losses={stats.losses} size={100} />
+                      <div className="flex-1 space-y-3.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-success flex-shrink-0" />
+                            <span className="text-[13px] text-text-muted">Victoires</span>
+                          </div>
+                          <span className="text-[28px] font-bold tracking-tighter text-success leading-none tabular-nums">{stats.wins}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-danger flex-shrink-0" />
+                            <span className="text-[13px] text-text-muted">Défaites</span>
+                          </div>
+                          <span className="text-[28px] font-bold tracking-tighter text-danger leading-none tabular-nums">{stats.losses}</span>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-white/[0.05] pt-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-text-muted flex-shrink-0" />
+                            <span className="text-[13px] text-text-muted">Total</span>
+                          </div>
+                          <span className="text-[28px] font-bold tracking-tighter text-text-secondary leading-none tabular-nums">{stats.total}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="space-y-2 border-t border-white/[0.05] pt-4">
