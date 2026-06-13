@@ -14,22 +14,18 @@ interface ModalProps {
 export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
   const [mounted, setMounted] = useState(open)
   const [visible, setVisible] = useState(false)
-  const [dragPhase, setDragPhase] = useState<'idle' | 'dragging' | 'snapping' | 'dismissing'>('idle')
-  const [dragY, setDragY] = useState(0)
-  const dragYRef = useRef(0)
-  const startYRef = useRef(0)
-  const isDraggingRef = useRef(false) // true seulement si le drag a démarré depuis la poignée
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef(false)
+  const startYRef = useRef(0)
+  const dragYRef = useRef(0)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
   useEffect(() => {
     if (open) {
       setMounted(true)
-      setDragPhase('idle')
-      setDragY(0)
-      dragYRef.current = 0
-      isDraggingRef.current = false
       const t = setTimeout(() => setVisible(true), 10)
       return () => clearTimeout(t)
     } else {
@@ -49,37 +45,57 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
   useEffect(() => {
     const handle = handleRef.current
-    if (!handle) return
+    const sheet = sheetRef.current
+    const overlay = overlayRef.current
+    if (!handle || !sheet || !overlay) return
+
+    function setSheetY(y: number, animated: boolean) {
+      sheet!.style.transition = animated
+        ? 'transform 280ms cubic-bezier(0.32, 0.72, 0, 1)'
+        : 'none'
+      sheet!.style.transform = `translateY(${y}px)`
+    }
+
+    function setOverlayOpacity(ratio: number) {
+      // ratio 0 = plein, 1 = transparent
+      overlay!.style.background = `rgba(0,0,0,${0.6 * (1 - ratio * 0.8)})`
+    }
 
     function onTouchStart(e: TouchEvent) {
+      isDraggingRef.current = true
       startYRef.current = e.touches[0].clientY
       dragYRef.current = 0
-      isDraggingRef.current = true
-      setDragPhase('dragging')
-      setDragY(0)
+      setSheetY(0, false)
     }
 
     function onTouchMove(e: TouchEvent) {
-      if (!isDraggingRef.current) return // ignore si pas démarré depuis la poignée
+      if (!isDraggingRef.current) return
+      e.preventDefault()
       const dy = Math.max(0, e.touches[0].clientY - startYRef.current)
       dragYRef.current = dy
-      setDragY(dy)
-      e.preventDefault()
+      // Manipulation DOM directe — zéro re-render React
+      setSheetY(dy, false)
+      // Feedback sur l'overlay proportionnel au glissement
+      const ratio = Math.min(dy / 300, 1)
+      setOverlayOpacity(ratio)
     }
 
     function onTouchEnd() {
       if (!isDraggingRef.current) return
       isDraggingRef.current = false
       const dy = dragYRef.current
-      if (dy > 100) {
-        setDragPhase('dismissing')
-        setDragY(window.innerHeight)
-        setTimeout(() => onCloseRef.current(), 260)
+
+      if (dy > 110) {
+        // Dismiss : animer vers le bas puis appeler onClose
+        setSheetY(window.innerHeight, true)
+        overlay!.style.transition = 'background 280ms ease-out'
+        overlay!.style.background = 'rgba(0,0,0,0)'
+        setTimeout(() => onCloseRef.current(), 280)
       } else {
-        setDragPhase('snapping')
-        setDragY(0)
-        dragYRef.current = 0
-        setTimeout(() => setDragPhase('idle'), 300)
+        // Snap back
+        setSheetY(0, true)
+        overlay!.style.transition = 'background 200ms ease-out'
+        overlay!.style.background = 'rgba(0,0,0,0.6)'
       }
     }
 
@@ -98,33 +114,25 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
   const sizes = { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' }
 
-  let sheetStyle: React.CSSProperties | undefined
-  if (dragPhase === 'dragging') {
-    sheetStyle = { transform: `translateY(${dragY}px)`, transition: 'none' }
-  } else if (dragPhase === 'snapping') {
-    sheetStyle = { transform: 'translateY(0)', transition: 'transform 300ms cubic-bezier(0.32, 0.72, 0, 1)' }
-  } else if (dragPhase === 'dismissing') {
-    sheetStyle = { transform: `translateY(${dragY}px)`, transition: 'transform 260ms cubic-bezier(0.32, 0.72, 0, 1)' }
-  }
-
   return (
     <div
+      ref={overlayRef}
       className={cn(
         'fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4',
-        'transition-colors duration-300',
-        visible && dragPhase !== 'dismissing' ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'
+        'backdrop-blur-sm transition-[background] duration-300',
+        visible ? 'bg-black/60' : 'bg-transparent pointer-events-none'
       )}
       onClick={e => { if (e.target === e.currentTarget) onCloseRef.current() }}
     >
       <div
+        ref={sheetRef}
         className={cn(
           'w-full bg-bg-surface border border-white/[0.07] shadow-glass',
           'rounded-t-3xl sm:rounded-3xl',
+          'transition-transform duration-300 ease-out',
           sizes[size],
-          dragPhase === 'idle' ? 'transition-transform duration-300 ease-out' : '',
-          dragPhase === 'idle' && visible ? 'translate-y-0' : dragPhase === 'idle' ? 'translate-y-full sm:translate-y-4' : ''
+          visible ? 'translate-y-0' : 'translate-y-full sm:translate-y-4'
         )}
-        style={sheetStyle}
         role="dialog"
         aria-modal="true"
       >
@@ -134,10 +142,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
           className="flex justify-center pt-3 pb-2 sm:hidden touch-none select-none"
           aria-hidden="true"
         >
-          <div className={cn(
-            'w-10 h-1 rounded-full transition-colors duration-150',
-            dragPhase === 'dragging' ? 'bg-white/40' : 'bg-white/20'
-          )} />
+          <div className="w-10 h-1 rounded-full bg-white/20" />
         </div>
 
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
