@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
+import { NotifBanner } from '@/components/pwa/NotifBanner'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { SkeletonAdminContent, SkeletonAdminStats } from '@/components/ui/Skeleton'
@@ -395,6 +396,8 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      <NotifBanner />
 
       <PullToRefresh onRefresh={loadData}>
         <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-5">

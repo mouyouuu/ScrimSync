@@ -7,6 +7,7 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid'
 import { ScrimCard } from '@/components/scrims/ScrimCard'
 import { InstallPWAHint } from '@/components/pwa/InstallPWAHint'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
+import { NotifBanner } from '@/components/pwa/NotifBanner'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { SkeletonAvailabilityGrid, SkeletonScrimCard, SkeletonStats } from '@/components/ui/Skeleton'
@@ -317,6 +318,8 @@ export default function PlayerPage({ params }: PageProps) {
           </div>
         </div>
       </header>
+
+      <NotifBanner playerId={player.id} />
 
       <PullToRefresh onRefresh={loadWeekData}>
         <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-5">
