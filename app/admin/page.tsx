@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { Logo } from '@/components/Logo'
@@ -57,7 +57,7 @@ const TABS = [
   },
   {
     key: 'equipe',
-    label: 'Ã‰quipe',
+    label: 'Équipe',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
@@ -78,7 +78,7 @@ const TABS = [
   },
   {
     key: 'reglages',
-    label: 'RÃ©glages',
+    label: 'Réglages',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
@@ -219,15 +219,15 @@ export default function AdminPage() {
 
   function copyDiscordMessage() {
     if (scrims.length === 0) {
-      navigator.clipboard.writeText('Aucun scrim confirmÃ© cette semaine.')
+      navigator.clipboard.writeText('Aucun scrim confirmé cette semaine.')
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
       return
     }
-    const lines = ['ðŸ“… **Scrims de la semaine**\n']
+    const lines = ['📅 **Scrims de la semaine**\n']
     scrims.forEach(scrim => {
-      const statusEmoji = scrim.status === 'cancelled' ? 'âŒ' : scrim.status === 'pending' ? 'â³' : 'âœ…'
-      lines.push(`${statusEmoji} **${formatScrimDate(weekStart, scrim.day_of_week, scrim.start_hour)}** â€” vs ${scrim.opponent_name}`)
+      const statusEmoji = scrim.status === 'cancelled' ? '❌' : scrim.status === 'pending' ? '⏳' : '✅'
+      lines.push(`${statusEmoji} **${formatScrimDate(weekStart, scrim.day_of_week, scrim.start_hour)}** — vs ${scrim.opponent_name}`)
       lines.push(`OP.GG : ${scrim.opponent_opgg_url}`)
       if (scrim.notes) lines.push(`Note : ${scrim.notes}`)
       lines.push('')
@@ -247,7 +247,7 @@ export default function AdminPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: 'ðŸ“… DisponibilitÃ©s manquantes',
+        title: '📅 Disponibilités manquantes',
         body: 'Renseigne tes dispos pour cette semaine !',
         url: '/',
         player_ids: missing.map(p => p.id),
@@ -329,7 +329,7 @@ export default function AdminPage() {
     const input = (riotInputs[playerId] ?? '').trim()
     const hashIdx = input.indexOf('#')
     if (hashIdx < 1 || hashIdx === input.length - 1) {
-      setRiotErrors(prev => ({ ...prev, [playerId]: 'Format invalide â€” ex: Pseudo#TAG' }))
+      setRiotErrors(prev => ({ ...prev, [playerId]: 'Format invalide — ex: Pseudo#TAG' }))
       return
     }
     const gameName = input.slice(0, hashIdx).trim()
@@ -390,7 +390,7 @@ export default function AdminPage() {
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5M9.5 9.5L13 7m0 0L9.5 4.5M13 7H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="hidden sm:inline">DÃ©connexion</span>
+              <span className="hidden sm:inline">Déconnexion</span>
             </button>
           </div>
         </div>
@@ -403,22 +403,22 @@ export default function AdminPage() {
           ) : (
             <div key={activeTab} className="animate-fade-in space-y-6">
 
-              {/* â”€â”€ SCRIMS â”€â”€ */}
+              {/* ── SCRIMS ── */}
               {activeTab === 'scrims' && <>
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle>CrÃ©neaux parfaits</CardTitle>
+                      <CardTitle>Créneaux parfaits</CardTitle>
                       <Badge variant={perfectSlots.length > 0 ? 'success' : 'muted'}>
-                        {perfectSlots.length} crÃ©neau{perfectSlots.length !== 1 ? 'x' : ''}
+                        {perfectSlots.length} créneau{perfectSlots.length !== 1 ? 'x' : ''}
                       </Badge>
                     </div>
                   </CardHeader>
                   {perfectSlots.length === 0 ? (
                     <EmptyState
                       variant="team"
-                      title="Aucun crÃ©neau 5/5 pour l'instant"
-                      description="Attendez que tous les joueurs renseignent leurs disponibilitÃ©s."
+                      title="Aucun créneau 5/5 pour l'instant"
+                      description="Attendez que tous les joueurs renseignent leurs disponibilités."
                     />
                   ) : (
                     <div className="space-y-2">
@@ -429,7 +429,7 @@ export default function AdminPage() {
                         >
                           <span className="h-2 w-2 rounded-full bg-success flex-shrink-0" />
                           <p className="flex-1 min-w-0 text-sm font-medium text-text-primary truncate">
-                            {formatLongDayWithDate(weekStart, slot.day_of_week)} Â· {formatHour(slot.start_hour)}
+                            {formatLongDayWithDate(weekStart, slot.day_of_week)} · {formatHour(slot.start_hour)}
                           </p>
                           <Badge variant="success" className="flex-shrink-0">{APP_CONFIG.expectedPlayers}/{APP_CONFIG.expectedPlayers}</Badge>
                           <Button
@@ -437,7 +437,7 @@ export default function AdminPage() {
                             className="flex-shrink-0 whitespace-nowrap"
                             onClick={() => setScrimModal({ open: true, day: slot.day_of_week, hour: slot.start_hour })}
                           >
-                            CrÃ©er un scrim
+                            Créer un scrim
                           </Button>
                         </div>
                       ))}
@@ -451,8 +451,8 @@ export default function AdminPage() {
                       <CardTitle>Scrims</CardTitle>
                       <div className="flex gap-2">
                         <Button size="sm" variant={copied ? 'success' : 'secondary'} onClick={copyDiscordMessage}>
-                          <span className="hidden sm:inline">{copied ? 'CopiÃ© !' : 'Copier message Discord'}</span>
-                          <span className="sm:hidden">{copied ? 'CopiÃ© !' : 'Discord'}</span>
+                          <span className="hidden sm:inline">{copied ? 'Copié !' : 'Copier message Discord'}</span>
+                          <span className="sm:hidden">{copied ? 'Copié !' : 'Discord'}</span>
                         </Button>
                         <Button size="sm" onClick={() => setScrimModal({ open: true })}>
                           <span className="hidden sm:inline">+ Nouveau scrim</span>
@@ -465,7 +465,7 @@ export default function AdminPage() {
                     <EmptyState
                       variant="scrims"
                       title="Aucun scrim cette semaine"
-                      description="CrÃ©ez un scrim depuis un crÃ©neau parfait ou manuellement."
+                      description="Créez un scrim depuis un créneau parfait ou manuellement."
                     />
                   ) : (
                     <div className="space-y-3">
@@ -495,7 +495,7 @@ export default function AdminPage() {
                 </Card>
               </>}
 
-              {/* â”€â”€ Ã‰QUIPE â”€â”€ */}
+              {/* ── ÉQUIPE ── */}
               {activeTab === 'equipe' && (() => {
                 const linkedPlayers = teamPlayers.filter(p => p.riot_tier && p.riot_lp != null)
                 const avgTotalLP = linkedPlayers.length > 0
@@ -505,13 +505,13 @@ export default function AdminPage() {
                   .filter(p => p.riot_lp_start != null)
                   .reduce((sum, p) => sum + (getTotalLP(p.riot_tier!, p.riot_rank, p.riot_lp!) - p.riot_lp_start!), 0)
                 return <>
-                  {/* Elo Ã‰quipe */}
+                  {/* Elo Équipe */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle>Elo Ã‰quipe</CardTitle>
+                        <CardTitle>Elo Équipe</CardTitle>
                         <Button size="sm" variant="secondary" loading={riotRefreshing} onClick={handleRefreshRanks}>
-                          {riotRefreshing ? 'MÃ j...' : (
+                          {riotRefreshing ? 'Màj...' : (
                             <span className="flex items-center gap-1.5">
                               <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
                                 <path d="M11.5 2A5.5 5.5 0 106.5 12M11.5 2v3.5H8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -523,7 +523,7 @@ export default function AdminPage() {
                       </div>
                     </CardHeader>
                     {linkedPlayers.length === 0 ? (
-                      <p className="text-sm text-text-muted">Liez des comptes LoL ci-dessous pour voir les stats d'Ã©quipe.</p>
+                      <p className="text-sm text-text-muted">Liez des comptes LoL ci-dessous pour voir les stats d'équipe.</p>
                     ) : (
                       <div className="space-y-3">
                         {/* Hero Elo moyen */}
@@ -538,7 +538,7 @@ export default function AdminPage() {
                                   <p className="text-[22px] font-bold text-text-primary tracking-tight leading-none">
                                     {tierLabel}{avg.rank ? ` ${avg.rank}` : ''}
                                   </p>
-                                  <p className="text-sm text-text-muted mt-1">{avg.lp} LP &middot; {linkedPlayers.length}/{teamPlayers.length} liÃ©s</p>
+                                  <p className="text-sm text-text-muted mt-1">{avg.lp} LP &middot; {linkedPlayers.length}/{teamPlayers.length} liés</p>
                                 </div>
                               </div>
                               <div className="border-t border-white/[0.06] px-5 py-3 flex items-center justify-between">
@@ -615,7 +615,7 @@ export default function AdminPage() {
                                         onClick={() => handleUnlinkRiot(player.id)}
                                         className="text-[11px] text-text-disabled hover:text-danger transition-colors"
                                       >
-                                        DÃ©lier
+                                        Délier
                                       </button>
                                     </div>
                                   </div>
@@ -653,11 +653,11 @@ export default function AdminPage() {
                     </div>
                   </Card>
 
-                  {/* RÃ©ponses */}
+                  {/* Réponses */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between flex-wrap gap-2">
-                        <CardTitle>RÃ©ponses</CardTitle>
+                        <CardTitle>Réponses</CardTitle>
                         <Button
                           size="sm"
                           variant={relanceSent ? 'success' : 'secondary'}
@@ -665,18 +665,18 @@ export default function AdminPage() {
                           disabled={relanceSending || players.every(p => submissions.some(s => s.player_id === p.id))}
                           onClick={handleRelanceAbsents}
                         >
-                          {relanceSent ? 'EnvoyÃ© !' : 'Relance'}
+                          {relanceSent ? 'Envoyé !' : 'Relance'}
                         </Button>
                       </div>
                     </CardHeader>
                     <PlayerStatusList players={teamPlayers} submissions={submissions} absenceIds={absences} />
                   </Card>
 
-                  {/* DisponibilitÃ©s */}
+                  {/* Disponibilités */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-4 flex-wrap">
-                        <CardTitle>DisponibilitÃ©s</CardTitle>
+                        <CardTitle>Disponibilités</CardTitle>
                         <div className="flex items-center gap-3 text-xs text-text-muted">
                           <span className="flex items-center gap-1.5">
                             <span className="h-2.5 w-2.5 rounded bg-success/30 border border-success/40" />
@@ -702,34 +702,34 @@ export default function AdminPage() {
                 </>
               })()}
 
-              {/* â”€â”€ STATS â”€â”€ */}
+              {/* ── STATS ── */}
               {activeTab === 'stats' && (
                 <Card>
-                  <CardHeader><CardTitle>Historique des rÃ©sultats</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>Historique des résultats</CardTitle></CardHeader>
                   {!stats ? (
                     <SkeletonAdminStats />
                   ) : stats.total === 0 ? (
                     <EmptyState
                       variant="stats"
-                      title="Pas encore de rÃ©sultats"
-                      description="Les stats apparaÃ®tront aprÃ¨s votre premier scrim jouÃ©."
+                      title="Pas encore de résultats"
+                      description="Les stats apparaîtront après votre premier scrim joué."
                     />
                   ) : (
                     <div className="grid grid-cols-2 gap-2.5">
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold tracking-tighter text-success leading-none">{stats.wins}</p>
+                        <p className="text-[36px] font-bold text-success tracking-tighter leading-none">{stats.wins}</p>
                         <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Victoires</p>
                       </div>
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold tracking-tighter text-danger leading-none">{stats.losses}</p>
-                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">DÃ©faites</p>
+                        <p className="text-[36px] font-bold text-danger tracking-tighter leading-none">{stats.losses}</p>
+                        <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Défaites</p>
                       </div>
                       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 text-center">
-                        <p className="text-[36px] font-bold tracking-tighter text-text-primary leading-none">{stats.total}</p>
+                        <p className="text-[36px] font-bold text-text-primary tracking-tighter leading-none">{stats.total}</p>
                         <p className="text-[11px] text-text-muted mt-2 font-medium uppercase tracking-wider">Matchs</p>
                       </div>
                       <div className="rounded-2xl border border-accent/20 bg-accent/[0.06] p-4 text-center">
-                        <p className="text-[36px] font-bold tracking-tighter text-accent leading-none">
+                        <p className="text-[36px] font-bold text-accent tracking-tighter leading-none">
                           {Math.round((stats.wins / stats.total) * 100)}%
                         </p>
                         <p className="text-[11px] text-accent/60 mt-2 font-medium uppercase tracking-wider">Win rate</p>
@@ -739,7 +739,7 @@ export default function AdminPage() {
                 </Card>
               )}
 
-              {/* â”€â”€ RÃ‰GLAGES â”€â”€ */}
+              {/* ── RÉGLAGES ── */}
               {activeTab === 'reglages' && <>
                 <PushNotifications />
 
@@ -748,7 +748,7 @@ export default function AdminPage() {
                   <div className="space-y-3">
                     <input
                       type="text"
-                      placeholder="Titre (ex: Scrim annulÃ©)"
+                      placeholder="Titre (ex: Scrim annulé)"
                       value={notifForm.title}
                       onChange={e => setNotifForm(f => ({ ...f, title: e.target.value }))}
                       className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
@@ -767,7 +767,7 @@ export default function AdminPage() {
                       disabled={!notifForm.title.trim() || notifSending}
                       variant={notifSent ? 'success' : 'primary'}
                     >
-                      {notifSent ? 'âœ“ EnvoyÃ© !' : 'Envoyer Ã  tous'}
+                      {notifSent ? '✓ Envoyé !' : 'Envoyer à tous'}
                     </Button>
                   </div>
                 </Card>
@@ -794,7 +794,7 @@ export default function AdminPage() {
                               loading={playerSaving === player.id}
                               onClick={() => handleSavePlayerName(player.id)}
                             >
-                              âœ“
+                              ✓
                             </Button>
                           )}
                           <button
@@ -846,7 +846,7 @@ export default function AdminPage() {
                         disabled={!newPlayerName.trim() || newPlayerCreating}
                         onClick={handleCreatePlayer}
                       >
-                        CrÃ©er
+                        Créer
                       </Button>
                     </div>
                     {newPlayerLink && (
@@ -897,7 +897,7 @@ export default function AdminPage() {
       <Modal
         open={scrimModal.open}
         onClose={() => setScrimModal({ open: false })}
-        title={scrimModal.scrim ? 'Modifier le scrim' : 'CrÃ©er un scrim'}
+        title={scrimModal.scrim ? 'Modifier le scrim' : 'Créer un scrim'}
       >
         <ScrimForm
           weekStart={ws}
@@ -922,7 +922,7 @@ export default function AdminPage() {
         size="sm"
       >
         <p className="text-sm text-text-secondary mb-5">
-          Cette action est irrÃ©versible. Voulez-vous vraiment supprimer ce scrim ?
+          Cette action est irréversible. Voulez-vous vraiment supprimer ce scrim ?
         </p>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => setDeleteConfirm(null)} className="flex-1">
@@ -945,7 +945,7 @@ export default function AdminPage() {
         size="sm"
       >
         <p className="text-sm text-text-secondary mb-5">
-          Cette action supprimera le joueur et toutes ses donnÃ©es. IrrÃ©versible.
+          Cette action supprimera le joueur et toutes ses données. Irréversible.
         </p>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => setDeletePlayerConfirm(null)} className="flex-1">
@@ -963,4 +963,3 @@ export default function AdminPage() {
     </div>
   )
 }
-
