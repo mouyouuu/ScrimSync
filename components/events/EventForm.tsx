@@ -76,24 +76,24 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
       />
 
       {/* Date + Heure */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
+      <div className="flex gap-3">
+        <div className="flex-[3]">
           <label className="text-xs font-medium text-text-secondary block mb-1.5">Date</label>
           <input
             type="date"
             value={form.event_date}
             onChange={e => set('event_date', e.target.value)}
-            className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
+            className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
           />
           {errors.event_date && <p className="text-xs text-danger mt-1">{errors.event_date}</p>}
         </div>
-        <div>
+        <div className="flex-[2]">
           <label className="text-xs font-medium text-text-secondary block mb-1.5">Heure</label>
           <input
             type="time"
             value={form.event_time}
             onChange={e => set('event_time', e.target.value)}
-            className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
+            className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
           />
           {errors.event_time && <p className="text-xs text-danger mt-1">{errors.event_time}</p>}
         </div>
