@@ -83,7 +83,7 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
             type="date"
             value={form.event_date}
             onChange={e => set('event_date', e.target.value)}
-            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
+            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-center text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
           />
           {errors.event_date && <p className="text-xs text-danger mt-1">{errors.event_date}</p>}
         </div>
@@ -93,7 +93,7 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
             type="time"
             value={form.event_time}
             onChange={e => set('event_time', e.target.value)}
-            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
+            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-center text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
           />
           {errors.event_time && <p className="text-xs text-danger mt-1">{errors.event_time}</p>}
         </div>
