@@ -76,25 +76,27 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
       />
 
       {/* Date + Heure */}
-      <div>
-        <label className="text-xs font-medium text-text-secondary block mb-1.5">Date</label>
-        <input
-          type="date"
-          value={form.event_date}
-          onChange={e => set('event_date', e.target.value)}
-          className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
-        />
-        {errors.event_date && <p className="text-xs text-danger mt-1">{errors.event_date}</p>}
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary block mb-1.5">Heure</label>
-        <input
-          type="time"
-          value={form.event_time}
-          onChange={e => set('event_time', e.target.value)}
-          className="w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 text-sm text-text-primary focus:outline-none focus:border-accent transition-colors"
-        />
-        {errors.event_time && <p className="text-xs text-danger mt-1">{errors.event_time}</p>}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="overflow-hidden">
+          <label className="text-xs font-medium text-text-secondary block mb-1.5">Date</label>
+          <input
+            type="date"
+            value={form.event_date}
+            onChange={e => set('event_date', e.target.value)}
+            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
+          />
+          {errors.event_date && <p className="text-xs text-danger mt-1">{errors.event_date}</p>}
+        </div>
+        <div className="overflow-hidden">
+          <label className="text-xs font-medium text-text-secondary block mb-1.5">Heure</label>
+          <input
+            type="time"
+            value={form.event_time}
+            onChange={e => set('event_time', e.target.value)}
+            className="block w-full max-w-full h-11 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 text-[13px] text-text-primary focus:outline-none focus:border-accent transition-colors appearance-none"
+          />
+          {errors.event_time && <p className="text-xs text-danger mt-1">{errors.event_time}</p>}
+        </div>
       </div>
 
       {/* Description */}
