@@ -77,7 +77,7 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
 
       {/* Date + Heure */}
       <div className="flex gap-3">
-        <div className="flex-[3]">
+        <div className="flex-[3] min-w-0">
           <label className="text-xs font-medium text-text-secondary block mb-1.5">Date</label>
           <input
             type="date"
@@ -87,7 +87,7 @@ export function EventForm({ onSubmit, onCancel }: EventFormProps) {
           />
           {errors.event_date && <p className="text-xs text-danger mt-1">{errors.event_date}</p>}
         </div>
-        <div className="flex-[2]">
+        <div className="flex-[2] min-w-0">
           <label className="text-xs font-medium text-text-secondary block mb-1.5">Heure</label>
           <input
             type="time"
