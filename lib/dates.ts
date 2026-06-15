@@ -113,3 +113,17 @@ export function isCurrentWeek(weekStart: Date): boolean {
   const current = getCurrentWeekStart()
   return formatWeekStart(weekStart) === formatWeekStart(current)
 }
+
+export function formatEventDate(eventDate: string, eventTime: string): string {
+  const [year, month, day] = eventDate.split('-').map(Number)
+  const d = new Date(year, month - 1, day)
+  const jsDay = d.getDay()
+  const dayIndex = jsDay === 0 ? 7 : jsDay
+  return `${DAY_NAMES_LONG[dayIndex]} ${day} ${MONTH_NAMES[month - 1]} à ${eventTime.slice(0, 5)}`
+}
+
+export function isEventPast(eventDate: string, eventTime: string): boolean {
+  const [year, month, day] = eventDate.split('-').map(Number)
+  const [h, m] = eventTime.split(':').map(Number)
+  return new Date(year, month - 1, day, h, m) < new Date()
+}

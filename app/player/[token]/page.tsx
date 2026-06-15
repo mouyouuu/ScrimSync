@@ -21,10 +21,13 @@ import {
   formatWeekLabel,
 } from '@/lib/dates'
 import { buildPlayerAvailabilitySet } from '@/lib/availability'
-import { Player, Availability, Scrim, SaveStatus } from '@/types'
+import { Player, Availability, Scrim, SaveStatus, TeamEvent, TeamEventFormData } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
 import { RankBadge, getTotalLP, lpToTierInfo } from '@/components/lol/RankBadge'
 import { haptic } from '@/lib/haptic'
+import { Modal } from '@/components/ui/Modal'
+import { EventCard } from '@/components/events/EventCard'
+import { EventForm } from '@/components/events/EventForm'
 
 function isScrimToday(scrim: Scrim, wStart: Date): boolean {
   const d = new Date(wStart)
@@ -35,7 +38,7 @@ function isScrimToday(scrim: Scrim, wStart: Date): boolean {
     d.getDate() === today.getDate()
 }
 
-type PlayerTab = 'dispo' | 'scrims' | 'stats'
+type PlayerTab = 'dispo' | 'scrims' | 'stats' | 'events'
 
 const TABS = [
   {
@@ -71,6 +74,18 @@ const TABS = [
       </svg>
     ),
   },
+  {
+    key: 'events',
+    label: 'Tournois',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 3h10v8c0 4.418-2.239 6-5 6S5 15.418 5 11V3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+        <path d="M5 8H3a2.5 2.5 0 002.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M15 8h2a2.5 2.5 0 01-2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M10 17v2M7 19h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
 ]
 
 interface PageProps {
@@ -95,6 +110,8 @@ export default function PlayerPage({ params }: PageProps) {
   const [absentLoading, setAbsentLoading] = useState(false)
   const [rankRefreshing, setRankRefreshing] = useState(false)
   const [teamPlayers, setTeamPlayers] = useState<Player[]>([])
+  const [events, setEvents] = useState<TeamEvent[]>([])
+  const [eventModal, setEventModal] = useState(false)
 
   const ws = formatWeekStart(weekStart)
 
@@ -139,6 +156,9 @@ export default function PlayerPage({ params }: PageProps) {
 
   useEffect(() => { loadWeekData() }, [loadWeekData])
 
+  const loadEvents = () =>
+    fetch('/api/events').then(r => r.json()).then(d => { if (Array.isArray(d)) setEvents(d) }).catch(() => {})
+
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
     fetch('/api/players')
@@ -147,6 +167,8 @@ export default function PlayerPage({ params }: PageProps) {
         if (Array.isArray(data)) setTeamPlayers(data.filter(p => p.role !== 'staff'))
       })
       .catch(() => {})
+    loadEvents()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -678,6 +700,94 @@ export default function PlayerPage({ params }: PageProps) {
                 )}
               </Card>
               </>
+            })()}
+
+            {/* ── TOURNOIS ── */}
+            {activeTab === 'events' && (() => {
+              const now = new Date()
+              const upcoming = events.filter(e => {
+                const [y, m, d] = e.event_date.split('-').map(Number)
+                const [h, min] = e.event_time.split(':').map(Number)
+                return new Date(y, m - 1, d, h, min) >= now
+              })
+              const past = events.filter(e => {
+                const [y, m, d] = e.event_date.split('-').map(Number)
+                const [h, min] = e.event_time.split(':').map(Number)
+                return new Date(y, m - 1, d, h, min) < now
+              }).reverse()
+
+              async function handleCreateEvent(data: TeamEventFormData) {
+                if (!player) return
+                haptic(14)
+                await fetch('/api/events', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ ...data, created_by: player.id, created_by_name: player.name }),
+                })
+                setEventModal(false)
+                loadEvents()
+              }
+
+              async function handleResult(id: string, result: 'win' | 'loss', score: string) {
+                haptic(10)
+                await fetch(`/api/events/${id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ result, score }),
+                })
+                loadEvents()
+              }
+
+              return (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>Tournois &amp; Matchs</CardTitle>
+                        <Button size="sm" onClick={() => { haptic(8); setEventModal(true) }}>+ Ajouter</Button>
+                      </div>
+                    </CardHeader>
+                    {upcoming.length === 0 && past.length === 0 ? (
+                      <EmptyState
+                        variant="slots"
+                        title="Aucun événement prévu"
+                        description="Ajoute un match ou un tournoi pour que toute l'équipe soit au courant."
+                      />
+                    ) : (
+                      <div className="space-y-4">
+                        {upcoming.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-0.5">À venir</p>
+                            {upcoming.map(e => (
+                              <EventCard
+                                key={e.id}
+                                event={e}
+                                onResult={(result, score) => handleResult(e.id, result, score)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        {past.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-0.5">Passés</p>
+                            {past.map(e => (
+                              <EventCard
+                                key={e.id}
+                                event={e}
+                                onResult={(result, score) => handleResult(e.id, result, score)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Card>
+
+                  <Modal open={eventModal} onClose={() => setEventModal(false)} title="Nouvel événement">
+                    <EventForm onSubmit={handleCreateEvent} onCancel={() => setEventModal(false)} />
+                  </Modal>
+                </>
+              )
             })()}
 
           </div>

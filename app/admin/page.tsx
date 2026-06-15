@@ -15,6 +15,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { NotifBanner } from '@/components/pwa/NotifBanner'
 import { WinRateDonut } from '@/components/ui/WinRateDonut'
+import { Modal } from '@/components/ui/Modal'
+import { EventCard } from '@/components/events/EventCard'
+import { EventForm } from '@/components/events/EventForm'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { SkeletonAdminContent, SkeletonAdminStats } from '@/components/ui/Skeleton'
@@ -27,7 +30,7 @@ import {
   formatHour,
 } from '@/lib/dates'
 import { buildAvailabilityMatrix, getPerfectSlots } from '@/lib/availability'
-import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData } from '@/types'
+import { Player, Availability, AvailabilitySubmission, Scrim, ScrimFormData, TeamEvent, TeamEventFormData } from '@/types'
 import { ReadyCheckCard } from '@/components/scrims/ReadyCheckCard'
 import { RankBadge, getTotalLP, lpToTierInfo } from '@/components/lol/RankBadge'
 
@@ -127,6 +130,9 @@ export default function AdminPage() {
   const [riotLinking, setRiotLinking] = useState<Record<string, boolean>>({})
   const [riotErrors, setRiotErrors] = useState<Record<string, string>>({})
   const [riotRefreshing, setRiotRefreshing] = useState(false)
+  const [events, setEvents] = useState<TeamEvent[]>([])
+  const [eventModal, setEventModal] = useState(false)
+  const [deleteEventConfirm, setDeleteEventConfirm] = useState<string | null>(null)
 
   const ws = formatWeekStart(weekStart)
 
@@ -172,11 +178,16 @@ export default function AdminPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
+  const loadEvents = () =>
+    fetch('/api/events').then(r => r.json()).then(d => { if (Array.isArray(d)) setEvents(d) }).catch(() => {})
+
   useEffect(() => {
     fetch('/api/stats').then(r => r.json()).then(d => setStats(d)).catch(() => {})
     fetch('/api/settings').then(r => r.json()).then(d => {
       if (Array.isArray(d.available_hours)) setAvailHours(d.available_hours)
     }).catch(() => {})
+    loadEvents()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const teamPlayers = players.filter(p => p.role !== 'staff')
@@ -497,6 +508,112 @@ export default function AdminPage() {
                     </div>
                   )}
                 </Card>
+
+                {/* ── TOURNOIS & MATCHS ── */}
+                {(() => {
+                  const now = new Date()
+                  const upcoming = events.filter(e => {
+                    const [y, m, d] = e.event_date.split('-').map(Number)
+                    const [h, min] = e.event_time.split(':').map(Number)
+                    return new Date(y, m - 1, d, h, min) >= now
+                  })
+                  const past = events.filter(e => {
+                    const [y, m, d] = e.event_date.split('-').map(Number)
+                    const [h, min] = e.event_time.split(':').map(Number)
+                    return new Date(y, m - 1, d, h, min) < now
+                  }).reverse()
+
+                  async function handleCreateEvent(data: TeamEventFormData) {
+                    haptic(14)
+                    await fetch('/api/events', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ...data, created_by: 'admin', created_by_name: 'Admin' }),
+                    })
+                    setEventModal(false)
+                    loadEvents()
+                  }
+
+                  async function handleResult(id: string, result: 'win' | 'loss', score: string) {
+                    haptic(10)
+                    await fetch(`/api/events/${id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ result, score }),
+                    })
+                    loadEvents()
+                  }
+
+                  async function handleDeleteEvent(id: string) {
+                    haptic(8)
+                    await fetch(`/api/events/${id}`, { method: 'DELETE' })
+                    setDeleteEventConfirm(null)
+                    loadEvents()
+                  }
+
+                  return (
+                    <>
+                      <Card>
+                        <CardHeader>
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <CardTitle>Tournois &amp; Matchs</CardTitle>
+                            <Button size="sm" onClick={() => { haptic(8); setEventModal(true) }}>+ Ajouter</Button>
+                          </div>
+                        </CardHeader>
+                        {upcoming.length === 0 && past.length === 0 ? (
+                          <EmptyState
+                            variant="slots"
+                            title="Aucun événement prévu"
+                            description="Ajoutez un match ou un tournoi pour informer l'équipe."
+                          />
+                        ) : (
+                          <div className="space-y-4">
+                            {upcoming.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-0.5">À venir</p>
+                                {upcoming.map(e => (
+                                  <EventCard
+                                    key={e.id}
+                                    event={e}
+                                    isAdmin
+                                    onDelete={() => setDeleteEventConfirm(e.id)}
+                                    onResult={(result, score) => handleResult(e.id, result, score)}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            {past.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider px-0.5">Passés</p>
+                                {past.map(e => (
+                                  <EventCard
+                                    key={e.id}
+                                    event={e}
+                                    isAdmin
+                                    onDelete={() => setDeleteEventConfirm(e.id)}
+                                    onResult={(result, score) => handleResult(e.id, result, score)}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Card>
+
+                      <Modal open={eventModal} onClose={() => setEventModal(false)} title="Nouvel événement">
+                        <EventForm onSubmit={handleCreateEvent} onCancel={() => setEventModal(false)} />
+                      </Modal>
+
+                      <Modal open={!!deleteEventConfirm} onClose={() => setDeleteEventConfirm(null)} title="Supprimer l'événement" size="sm">
+                        <p className="text-sm text-text-secondary mb-5">Cette action supprimera l&apos;événement et son résultat. Irréversible.</p>
+                        <div className="flex gap-2">
+                          <Button variant="secondary" onClick={() => setDeleteEventConfirm(null)} className="flex-1">Annuler</Button>
+                          <Button variant="danger" onClick={() => deleteEventConfirm && handleDeleteEvent(deleteEventConfirm)} className="flex-1">Supprimer</Button>
+                        </div>
+                      </Modal>
+                    </>
+                  )
+                })()}
               </>}
 
               {/* ── ÉQUIPE ── */}

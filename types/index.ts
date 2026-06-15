@@ -83,3 +83,28 @@ export interface ScrimFormData {
   status: ScrimStatus
   week_start: string
 }
+
+export type EventType = 'match' | 'tournament'
+export type EventResult = 'win' | 'loss' | null
+
+export interface TeamEvent {
+  id: string
+  type: EventType
+  title: string
+  event_date: string
+  event_time: string
+  description?: string | null
+  result?: EventResult
+  score?: string | null
+  created_by: string
+  created_by_name?: string | null
+  created_at: string
+}
+
+export interface TeamEventFormData {
+  type: EventType
+  title: string
+  event_date: string
+  event_time: string
+  description: string
+}
