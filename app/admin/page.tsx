@@ -15,7 +15,6 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PushNotifications } from '@/components/pwa/PushNotifications'
 import { NotifBanner } from '@/components/pwa/NotifBanner'
 import { WinRateDonut } from '@/components/ui/WinRateDonut'
-import { Modal } from '@/components/ui/Modal'
 import { EventCard } from '@/components/events/EventCard'
 import { EventForm } from '@/components/events/EventForm'
 import { PullToRefresh } from '@/components/pwa/PullToRefresh'
@@ -562,7 +561,7 @@ export default function AdminPage() {
                         </CardHeader>
                         {upcoming.length === 0 && past.length === 0 ? (
                           <EmptyState
-                            variant="slots"
+                            variant="events"
                             title="Aucun événement prévu"
                             description="Ajoutez un match ou un tournoi pour informer l'équipe."
                           />

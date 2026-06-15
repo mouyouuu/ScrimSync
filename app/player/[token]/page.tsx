@@ -749,7 +749,7 @@ export default function PlayerPage({ params }: PageProps) {
                     </CardHeader>
                     {upcoming.length === 0 && past.length === 0 ? (
                       <EmptyState
-                        variant="slots"
+                        variant="events"
                         title="Aucun événement prévu"
                         description="Ajoute un match ou un tournoi pour que toute l'équipe soit au courant."
                       />

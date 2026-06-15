@@ -3,7 +3,7 @@ interface EmptyStateProps {
   description?: string
   icon?: React.ReactNode
   action?: React.ReactNode
-  variant?: 'scrims' | 'slots' | 'stats' | 'team' | 'default'
+  variant?: 'scrims' | 'slots' | 'stats' | 'team' | 'events' | 'default'
 }
 
 const ICONS = {
@@ -60,6 +60,21 @@ const ICONS = {
       <path d="M2 42c0-5.523 3.134-8.5 8-8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
       <circle cx="42" cy="20" r="4.5" stroke="currentColor" strokeWidth="1.2" opacity="0.4"/>
       <path d="M50 42c0-5.523-3.134-8.5-8-8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
+    </svg>
+  ),
+  events: (
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+      {/* Calendar base */}
+      <rect x="5" y="12" width="42" height="34" rx="6" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5 23h42" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M17 6v10M35 6v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Trophy inside calendar */}
+      <path d="M19 30h14v7c0 3.866-2.686 5-7 5s-7-1.134-7-5v-7z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" opacity="0.85"/>
+      <path d="M19 34h-2.5a2.5 2.5 0 002.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.6"/>
+      <path d="M33 34h2.5a2.5 2.5 0 01-2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.6"/>
+      <path d="M26 42v3M22 45h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.5"/>
+      {/* Star in trophy */}
+      <path d="M26 33l.9 1.8h2l-1.5 1.2.6 1.8-1.6-1-1.6 1 .6-1.8-1.5-1.2h2z" fill="currentColor" opacity="0.35"/>
     </svg>
   ),
   default: (
